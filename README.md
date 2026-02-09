@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Loanify-JavaFX 💰
 
 **Loanify-JavaFX** is a desktop-based Loan Management System built using **Java** and **JavaFX**.  
@@ -62,3 +63,35 @@ Loanify-JavaFX
 │ │ └── images
 ├── pom.xml
 └── README.md
+=======
+# Loan Management System
+
+A simple JavaFX Dashboard application for managing loans.
+
+## Prerequisites
+
+- **Java Development Kit (JDK) 17** or later.
+
+## Quick Start (Included Maven)
+
+I have downloaded Maven for you in the `tools` folder so you don't need to install it globally.
+
+1.  Open this folder in your terminal.
+2.  Run the application using the included Maven:
+
+    ```powershell
+    .\tools\apache-maven-3.9.6\bin\mvn.cmd clean javafx:run
+    ```
+
+## Project Structure
+
+- `src/main/java`: Java source files.
+- `src/main/resources`: FXML and other resources.
+- `pom.xml`: Maven configuration file.
+- `tools/`: Contains the Apache Maven distribution.
+
+## Troubleshooting
+
+- **Java Version Errors**: Ensure `java -version` shows version 17 or higher.
+- **Port invalid**: If you see errors about ports, ensure no other application is blocking it.
+>>>>>>> 3b19968 (Initial project structure)
