@@ -87,7 +87,7 @@
                   <Button text="New Loan" styleClass="button-primary" maxWidth="Infinity" onAction="#handleNewLoan"/>
                   <Button text="Add Customer" styleClass="button-secondary" maxWidth="Infinity" onAction="#handleAddCustomer"/>
                   <Button text="Record Payment" styleClass="button-secondary" maxWidth="Infinity"/>
-                  <Button text="View Reports" styleClass="button-secondary" maxWidth="Infinity"/>
+                  <Button text="View Reports" styleClass="button-secondary" maxWidth="Infinity" onAction="#handleViewReports"/>
              </VBox>
         </HBox>
 

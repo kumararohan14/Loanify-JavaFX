@@ -2,7 +2,50 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="com.example.loanmanagement.controller.ReportsController" spacing="20">
-    <Label text="Reports" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
-    <Label text="Under Construction"/>
-</VBox>
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="com.example.loanmanagement.controller.ReportsController"
+            stylesheets="@../application.css">
+    
+    <top>
+        <VBox spacing="10" style="-fx-padding: 20;">
+            <Label text="Reports &amp; Analytics" styleClass="header-label"/>
+            <Label text="Generate detailed insights" styleClass="sub-header-label"/>
+        </VBox>
+    </top>
+
+    <left>
+        <VBox spacing="15" style="-fx-padding: 20; -fx-background-color: -color-bg-subtle; -fx-border-color: -color-border; -fx-border-width: 0 1 0 0;" prefWidth="300">
+            <Label text="Report Configuration" style="-fx-font-weight: bold;"/>
+            
+            <VBox spacing="5">
+                <Label text="Report Type"/>
+                <ComboBox fx:id="reportTypeCombo" maxWidth="Infinity" promptText="Select Report Type"/>
+            </VBox>
+            
+            <Separator/>
+            
+            <VBox spacing="5">
+                <Label text="Date Range"/>
+                <DatePicker fx:id="startDatePicker" maxWidth="Infinity" promptText="Start Date"/>
+                <DatePicker fx:id="endDatePicker" maxWidth="Infinity" promptText="End Date"/>
+            </VBox>
+
+            <Region VBox.vgrow="ALWAYS"/>
+            
+            <Button text="Generate Report" onAction="#handleGenerateReport" styleClass="button-primary" maxWidth="Infinity"/>
+        </VBox>
+    </left>
+
+    <center>
+        <VBox spacing="20" style="-fx-padding: 20;">
+            <HBox alignment="CENTER_LEFT" spacing="10">
+                <Label text="Report Preview" style="-fx-font-weight: bold;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button text="Export via Email" styleClass="button-secondary" disable="true"/>
+                <Button text="Print" styleClass="button-secondary" disable="true"/>
+            </HBox>
+            
+            <TextArea fx:id="reportTextArea" VBox.vgrow="ALWAYS" editable="false" style="-fx-font-family: 'Consolas', monospace;"/>
+        </VBox>
+    </center>
+    
+</BorderPane>
