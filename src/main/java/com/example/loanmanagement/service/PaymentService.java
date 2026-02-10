@@ -76,4 +76,8 @@ public class PaymentService {
     public List<Payment> getPaymentsByLoan(Long loanId) {
         return paymentDAO.findByLoanId(loanId);
     }
+
+    public List<Payment> getAllPayments() {
+        return paymentDAO.findAll();
+    }
 }

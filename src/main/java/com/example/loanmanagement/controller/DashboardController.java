@@ -9,6 +9,8 @@ import java.io.IOException;
 
 public class DashboardController {
 
+    private static DashboardController instance;
+
     @FXML
     private BorderPane mainLayout;
     @FXML
@@ -16,8 +18,13 @@ public class DashboardController {
     @FXML
     private Label userNameLabel;
 
+    public static DashboardController getInstance() {
+        return instance;
+    }
+
     @FXML
     public void initialize() {
+        instance = this;
         // Load default view (Dashboard Home)
         loadView("home_dashboard.fxml");
     }
@@ -57,7 +64,7 @@ public class DashboardController {
         SceneManager.switchScene("login.fxml");
     }
 
-    private void loadView(String fxml) {
+    public void loadView(String fxml) {
         try {
             // We need to implement loadView in SceneManager to return Parent
             // Or just use FXMLLoader here.

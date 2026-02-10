@@ -2,7 +2,59 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="com.example.loanmanagement.controller.PaymentsController" spacing="20">
-    <Label text="Payments" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
-    <Label text="Under Construction"/>
-</VBox>
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="com.example.loanmanagement.controller.PaymentsController"
+            stylesheets="@../application.css">
+    
+    <top>
+        <VBox spacing="10" style="-fx-padding: 20;">
+            <Label text="Record Payment" styleClass="header-label"/>
+            <Label text="Process loan repayment" styleClass="sub-header-label"/>
+        </VBox>
+    </top>
+
+    <center>
+        <GridPane hgap="15" vgap="15" style="-fx-padding: 20;">
+            <columnConstraints>
+                <ColumnConstraints minWidth="150" prefWidth="200"/>
+                <ColumnConstraints minWidth="200" prefWidth="300" hgrow="ALWAYS"/>
+            </columnConstraints>
+
+            <!-- Customer Selection -->
+            <Label text="Select Customer:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+            <ComboBox fx:id="customerCombo" promptText="Choose a customer..." maxWidth="Infinity" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+            <!-- Loan Selection -->
+            <Label text="Select Loan:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+            <ComboBox fx:id="loanCombo" promptText="Select active loan" maxWidth="Infinity" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+            <!-- Loan Details Display -->
+            <Label text="Outstanding Amount:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+            <Label fx:id="outstandingLabel" text="-" GridPane.rowIndex="2" GridPane.columnIndex="1" style="-fx-font-weight: bold;"/>
+
+            <Label text="EMI Amount:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+            <Label fx:id="emiLabel" text="-" GridPane.rowIndex="3" GridPane.columnIndex="1" style="-fx-font-weight: bold;"/>
+
+            <!-- Payment Amount -->
+            <Label text="Payment Amount:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+            <TextField fx:id="amountField" promptText="Enter amount" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+
+            <!-- Payment Method -->
+            <Label text="Payment Method:" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+            <ComboBox fx:id="methodCombo" promptText="Select Method" maxWidth="Infinity" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+
+            <!-- Date -->
+            <Label text="Payment Date:" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
+            <DatePicker fx:id="paymentDatePicker" maxWidth="Infinity" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
+
+            <!-- Buttons -->
+            <HBox spacing="15" alignment="CENTER_LEFT" GridPane.rowIndex="7" GridPane.columnIndex="1">
+                <Button text="Save Payment" onAction="#handleSavePayment" styleClass="action-button"/>
+                <Button text="Clear" onAction="#handleClear" styleClass="secondary-button"/>
+            </HBox>
+
+            <!-- Status -->
+            <Label fx:id="statusLabel" text="" GridPane.rowIndex="8" GridPane.columnIndex="1"/>
+
+        </GridPane>
+    </center>
+</BorderPane>

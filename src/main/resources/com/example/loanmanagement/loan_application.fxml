@@ -2,7 +2,60 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="com.example.loanmanagement.controller.LoanApplicationController" spacing="20">
-    <Label text="Loan Application" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
-    <Label text="Under Construction"/>
-</VBox>
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="com.example.loanmanagement.controller.LoanApplicationController"
+            stylesheets="@../application.css">
+    
+    <top>
+        <VBox spacing="10" style="-fx-padding: 20;">
+            <Label text="New Loan Application" styleClass="header-label"/>
+            <Label text="Enter loan details below" styleClass="sub-header-label"/>
+        </VBox>
+    </top>
+
+    <center>
+        <GridPane hgap="15" vgap="15" style="-fx-padding: 20;">
+            <columnConstraints>
+                <ColumnConstraints minWidth="150" prefWidth="200"/>
+                <ColumnConstraints minWidth="200" prefWidth="300" hgrow="ALWAYS"/>
+            </columnConstraints>
+
+            <!-- Customer Selection -->
+            <Label text="Select Customer:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+            <ComboBox fx:id="customerCombo" promptText="Choose a customer..." maxWidth="Infinity" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+            <!-- Loan Type -->
+            <Label text="Loan Type:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+            <ComboBox fx:id="loanTypeCombo" promptText="Select Loan Type" maxWidth="Infinity" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+            <!-- Amount -->
+            <Label text="Loan Amount:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+            <TextField fx:id="amountField" promptText="e.g. 50000" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+            <!-- Interest Rate -->
+            <Label text="Interest Rate (% p.a):" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+            <TextField fx:id="interestField" promptText="e.g. 12.5" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
+            <!-- Tenure -->
+            <Label text="Duration (Months):" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+            <TextField fx:id="durationField" promptText="e.g. 12" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+
+            <!-- Start Date -->
+            <Label text="Start Date:" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+            <DatePicker fx:id="startDatePicker" maxWidth="Infinity" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+
+            <!-- EMI Preview -->
+            <Label text="Estimated EMI:" GridPane.rowIndex="6" GridPane.columnIndex="0" style="-fx-font-weight: bold;"/>
+            <Label fx:id="emiPreviewLabel" text="0.00" GridPane.rowIndex="6" GridPane.columnIndex="1" style="-fx-font-size: 16px; -fx-text-fill: #4CAF50;"/>
+
+            <!-- Buttons -->
+            <HBox spacing="15" alignment="CENTER_LEFT" GridPane.rowIndex="7" GridPane.columnIndex="1">
+                <Button text="Submit Application" onAction="#handleSubmit" styleClass="action-button"/>
+                <Button text="Clear" onAction="#handleClear" styleClass="secondary-button"/>
+            </HBox>
+
+            <!-- Status Message -->
+            <Label fx:id="statusLabel" text="" GridPane.rowIndex="8" GridPane.columnIndex="1"/>
+
+        </GridPane>
+    </center>
+</BorderPane>
