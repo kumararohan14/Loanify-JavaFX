@@ -58,8 +58,8 @@ public class LoginController {
             // Check role match?
             User.Role selectedRole = userTypeAdmin.isSelected() ? User.Role.ADMIN : User.Role.STAFF;
             if (user.getRole() == selectedRole) {
-                // Store user session?
-                // For now just switch scene
+                // Store user session
+                com.example.loanmanagement.util.UserSession.setSession(user);
                 SceneManager.switchScene("dashboard.fxml");
             } else {
                 showAlert("Error", "Invalid role selected for this user");

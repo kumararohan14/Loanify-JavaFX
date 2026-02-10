@@ -29,6 +29,11 @@ public class SceneManager {
             primaryStage.show();
         } catch (IOException e) {
             e.printStackTrace();
+            javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
+                    javafx.scene.control.Alert.AlertType.ERROR);
+            alert.setTitle("Navigation Error");
+            alert.setContentText("Could not load view: " + fxml + "\n" + e.getMessage());
+            alert.showAndWait();
         }
     }
 

@@ -142,4 +142,11 @@ public class HomeDashboardController {
             DashboardController.getInstance().loadView("customers.fxml");
         }
     }
+
+    @FXML
+    private void handleViewReports() {
+        if (DashboardController.getInstance() != null) {
+            DashboardController.getInstance().loadView("reports.fxml");
+        }
+    }
 }

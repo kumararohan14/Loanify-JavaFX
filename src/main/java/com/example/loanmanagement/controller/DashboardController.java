@@ -25,6 +25,14 @@ public class DashboardController {
     @FXML
     public void initialize() {
         instance = this;
+
+        // Load User Info
+        com.example.loanmanagement.util.UserSession session = com.example.loanmanagement.util.UserSession.getInstance();
+        if (session != null && session.getUser() != null) {
+            userNameLabel.setText(session.getUser().getName());
+            userRoleLabel.setText(session.getUser().getRole().toString());
+        }
+
         // Load default view (Dashboard Home)
         loadView("home_dashboard.fxml");
     }
