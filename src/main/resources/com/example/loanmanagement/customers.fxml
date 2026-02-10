@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.example.loanmanagement.controller.CustomersController"
+            spacing="20">
+    
+    <HBox alignment="CENTER_LEFT" spacing="20">
+        <VBox>
+            <Label text="Customer Management" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
+            <Label text="Manage your customer database" style="-fx-text-fill: -color-text-muted;"/>
+        </VBox>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button text="+ Add Customer" styleClass="button-primary" onAction="#handleAddCustomer"/>
+    </HBox>
+    
+    <HBox spacing="10" styleClass="card" alignment="CENTER_LEFT" style="-fx-padding: 10;">
+        <TextField promptText="Search by name, ID, or phone..." prefWidth="300"/>
+        <Button text="Filter" styleClass="button-secondary"/>
+    </HBox>
+    
+    <TableView fx:id="customersTable" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn text="Customer" prefWidth="200"/>
+            <TableColumn text="NIC / ID" prefWidth="120"/>
+            <TableColumn text="Contact" prefWidth="200"/>
+            <TableColumn text="Active Loans" prefWidth="100"/>
+            <TableColumn text="Status" prefWidth="100"/>
+            <TableColumn text="Actions" prefWidth="100"/>
+        </columns>
+        <columnResizePolicy>
+            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+        </columnResizePolicy>
+    </TableView>
+
+</VBox>

@@ -1,0 +1,11 @@
+package com.example.loanmanagement.controller;
+
+import javafx.fxml.FXML;
+
+public class LoanApplicationController {
+    @FXML
+    public void initialize() {
+        // Load customers combo
+        // Setup listeners
+    }
+}
