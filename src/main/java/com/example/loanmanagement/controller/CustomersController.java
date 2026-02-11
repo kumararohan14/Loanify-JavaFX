@@ -215,7 +215,38 @@ public class CustomersController {
                     try {
                         customerService.resendOtp(customer.getNic());
                     } catch (SmsSendingException e1) {
-                        e1.printStackTrace();
+                        // SMS failed
+            Alert smsAlert = new Alert(Alert.AlertType.WARNING);
+            smsAlert.setTitle("OTP Not Sent");
+            smsAlert.setContentText(
+                    "Failed to send OTP to: " + customer.getPhone() +
+                    "\nReason: " + e1.getMessage() +
+                    "\nClick 'Retry' to resend OTP."
+            );
+
+            ButtonType retryBtn = new ButtonType("Retry");
+            smsAlert.getButtonTypes().setAll(retryBtn, ButtonType.CANCEL);
+
+            Optional<ButtonType> response = smsAlert.showAndWait();
+            if (response.isPresent() && response.get() == retryBtn) {
+                try {
+                    customerService.resendOtp(customer.getNic());
+                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                    alert.setTitle("OTP Resent");
+                    alert.setHeaderText(null);
+                    alert.setContentText("A new OTP has been sent to " + customer.getPhone());
+                    alert.showAndWait();
+                } catch (SmsSendingException ex) {
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setTitle("Error");
+                    alert.setContentText("Failed to resend OTP: " + ex.getMessage());
+                    alert.showAndWait();
+                }
+            }
+
+            // Allow OTP verification dialog even if first SMS failed
+            showOtpVerificationDialog(customer);
+            loadCustomers();
                     }
                 });
                 pane.getChildren().add(btnResendOtp);
