@@ -135,8 +135,8 @@ public class CustomersController {
         });
 
         // Status Column
-        colStatus.setCellValueFactory(new PropertyValueFactory<>("status")); // Ensure Customer model has getStatus() or
-                                                                             // logic
+        colStatus.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty(
+                cellData.getValue().getStatus() != null ? cellData.getValue().getStatus().name() : ""));
         colStatus.setCellFactory(col -> new TableCell<Customer, String>() {
             @Override
             protected void updateItem(String item, boolean empty) {

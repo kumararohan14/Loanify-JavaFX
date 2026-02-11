@@ -53,6 +53,11 @@ public class DashboardController {
     }
 
     @FXML
+    private void showLoanApplication() {
+        loadView("loan_application.fxml");
+    }
+
+    @FXML
     private void showPayments() {
         loadView("payments.fxml");
     }
@@ -74,15 +79,13 @@ public class DashboardController {
 
     public void loadView(String fxml) {
         try {
-            // We need to implement loadView in SceneManager to return Parent
-            // Or just use FXMLLoader here.
-            // Since views might need specific controllers, standard FXMLLoader is fine.
-            // But we need the resource path.
-            // Let's assume views are in the same package or we use full path.
-            // SceneManager.loadView returns Parent.
             mainLayout.setCenter(SceneManager.loadView(fxml));
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void loadViewNode(javafx.scene.Node node) {
+        mainLayout.setCenter(node);
     }
 }

@@ -18,7 +18,7 @@ public class LoanApplicationController {
     @FXML
     private TextField interestField;
     @FXML
-    private TextField durationField;
+    private ComboBox<Integer> durationCombo; // Changed to ComboBox
     @FXML
     private DatePicker startDatePicker;
     @FXML
@@ -49,11 +49,22 @@ public class LoanApplicationController {
         loanTypeCombo.setItems(javafx.collections.FXCollections
                 .observableArrayList(com.example.loanmanagement.model.Loan.LoanType.values()));
 
+        // Load Duration Options
+        durationCombo.setItems(
+                javafx.collections.FXCollections.observableArrayList(6, 12, 18, 24, 36, 48, 60, 120, 180, 240));
+
         // Add listeners for dynamic EMI calculation
-        javafx.beans.value.ChangeListener<String> listener = (obs, oldVal, newVal) -> calculateEmiPreview();
+        javafx.beans.value.ChangeListener<Object> listener = (obs, oldVal, newVal) -> calculateEmiPreview();
         amountField.textProperty().addListener(listener);
         interestField.textProperty().addListener(listener);
-        durationField.textProperty().addListener(listener);
+        durationCombo.valueProperty().addListener(listener);
+
+        // Auto-fill interest rate based on loan type
+        loanTypeCombo.valueProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                interestField.setText(String.valueOf(newVal.getInterestRate()));
+            }
+        });
 
         // Set default start date
         startDatePicker.setValue(java.time.LocalDate.now());
@@ -63,13 +74,15 @@ public class LoanApplicationController {
         try {
             double principal = Double.parseDouble(amountField.getText());
             double rate = Double.parseDouble(interestField.getText()) / 12 / 100;
-            int time = Integer.parseInt(durationField.getText());
+            Integer duration = durationCombo.getValue();
 
-            if (principal > 0 && rate > 0 && time > 0) {
-                double emi = (principal * rate * Math.pow(1 + rate, time)) / (Math.pow(1 + rate, time) - 1);
-                emiPreviewLabel.setText(String.format("%.2f", emi));
+            if (principal > 0 && rate > 0 && duration != null && duration > 0) {
+                double emi = (principal * rate * Math.pow(1 + rate, duration)) / (Math.pow(1 + rate, duration) - 1);
+                emiPreviewLabel.setText(String.format("Rs. %,.2f", emi));
+            } else {
+                emiPreviewLabel.setText("0.00");
             }
-        } catch (NumberFormatException e) {
+        } catch (NumberFormatException | NullPointerException e) {
             emiPreviewLabel.setText("0.00");
         }
     }
@@ -77,14 +90,15 @@ public class LoanApplicationController {
     @FXML
     private void handleSubmit() {
         try {
-            if (customerCombo.getValue() == null || loanTypeCombo.getValue() == null) {
-                showError("Please select a customer and loan type.");
+            if (customerCombo.getValue() == null || loanTypeCombo.getValue() == null
+                    || durationCombo.getValue() == null) {
+                showError("Please fill all required fields.");
                 return;
             }
 
             double amount = Double.parseDouble(amountField.getText());
             double interest = Double.parseDouble(interestField.getText());
-            int duration = Integer.parseInt(durationField.getText());
+            int duration = durationCombo.getValue();
 
             com.example.loanmanagement.model.Loan loan = new com.example.loanmanagement.model.Loan();
             loan.setCustomer(customerCombo.getValue());
@@ -103,7 +117,7 @@ public class LoanApplicationController {
             handleClear();
 
         } catch (NumberFormatException e) {
-            showError("Invalid numeric input. Please check amount, interest, and duration.");
+            showError("Invalid numeric input. Please check amount.");
         } catch (Exception e) {
             showError("Error submitting loan: " + e.getMessage());
             e.printStackTrace();
@@ -116,9 +130,10 @@ public class LoanApplicationController {
         loanTypeCombo.getSelectionModel().clearSelection();
         amountField.clear();
         interestField.clear();
-        durationField.clear();
+        durationCombo.getSelectionModel().clearSelection();
         startDatePicker.setValue(java.time.LocalDate.now());
         emiPreviewLabel.setText("0.00");
+        statusLabel.setText("");
     }
 
     private void showError(String message) {

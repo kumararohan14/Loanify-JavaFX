@@ -24,7 +24,7 @@
             <VBox spacing="5" VBox.vgrow="ALWAYS" style="-fx-padding: 20 0;">
                 <Button text="Dashboard" onAction="#showDashboard" styleClass="sidebar-button" maxWidth="Infinity"/>
                 <Button text="Customers" onAction="#showCustomers" styleClass="sidebar-button" maxWidth="Infinity"/>
-                <Button text="Loan Application" onAction="#showLoans" styleClass="sidebar-button" maxWidth="Infinity"/>
+                <Button text="Loan Application" onAction="#showLoanApplication" styleClass="sidebar-button" maxWidth="Infinity"/>
                 <Button text="Loans" onAction="#showLoans" styleClass="sidebar-button" maxWidth="Infinity"/>
                 <Button text="Payments" onAction="#showPayments" styleClass="sidebar-button" maxWidth="Infinity"/>
                 <Button text="Reports" onAction="#showReports" styleClass="sidebar-button" maxWidth="Infinity"/>

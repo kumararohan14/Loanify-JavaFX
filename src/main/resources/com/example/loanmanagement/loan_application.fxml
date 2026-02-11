@@ -1,60 +1,108 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.shape.SVGPath?>
 
 <BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="com.example.loanmanagement.controller.LoanApplicationController"
             stylesheets="@../application.css">
     
     <top>
-        <VBox spacing="10" style="-fx-padding: 20;">
-            <Label text="New Loan Application" styleClass="header-label"/>
-            <Label text="Enter loan details below" styleClass="sub-header-label"/>
-        </VBox>
+        <HBox spacing="10" style="-fx-padding: 20 30; -fx-background-color: transparent;">
+            <VBox>
+                <Label text="Loan Application" styleClass="header-label"/>
+                <Label text="Create new loan applications" styleClass="sub-header-label"/>
+            </VBox>
+            <Region HBox.hgrow="ALWAYS"/>
+            <!-- Search Bar + Icons Placeholder -->
+            <TextField promptText="Search..." style="-fx-pref-width: 250; -fx-background-radius: 20;"/>
+        </HBox>
     </top>
 
     <center>
-        <GridPane hgap="15" vgap="15" style="-fx-padding: 20;">
+        <GridPane hgap="30" vgap="20" style="-fx-padding: 10 30 30 30;">
             <columnConstraints>
-                <ColumnConstraints minWidth="150" prefWidth="200"/>
-                <ColumnConstraints minWidth="200" prefWidth="300" hgrow="ALWAYS"/>
+                <ColumnConstraints percentWidth="60"/>
+                <ColumnConstraints percentWidth="40"/>
             </columnConstraints>
+            <rowConstraints>
+                 <RowConstraints vgrow="ALWAYS"/>
+            </rowConstraints>
 
-            <!-- Customer Selection -->
-            <Label text="Select Customer:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-            <ComboBox fx:id="customerCombo" promptText="Choose a customer..." maxWidth="Infinity" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+            <!-- LEFT: Application Form Card -->
+            <VBox styleClass="card" spacing="20" GridPane.columnIndex="0">
+                <Label text="Loan Application Form" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #1f2937;"/>
+                
+                <VBox spacing="50">
+                    <GridPane vgap="15" hgap="15">
+                        <columnConstraints>
+                             <ColumnConstraints hgrow="ALWAYS"/>
+                        </columnConstraints>
+                        
+                        <!-- Customer -->
+                        <VBox spacing="5" GridPane.rowIndex="0">
+                            <Label text="Select Customer" style="-fx-font-weight: bold; -fx-text-fill: #4b5563;"/>
+                            <ComboBox fx:id="customerCombo" promptText="Search and select customer..." maxWidth="Infinity" style="-fx-pref-height: 40;"/>
+                        </VBox>
 
-            <!-- Loan Type -->
-            <Label text="Loan Type:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-            <ComboBox fx:id="loanTypeCombo" promptText="Select Loan Type" maxWidth="Infinity" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                        <!-- Loan Type -->
+                        <VBox spacing="5" GridPane.rowIndex="1">
+                            <Label text="Loan Type" style="-fx-font-weight: bold; -fx-text-fill: #4b5563;"/>
+                            <ComboBox fx:id="loanTypeCombo" promptText="Select loan type..." maxWidth="Infinity" style="-fx-pref-height: 40;"/>
+                        </VBox>
 
-            <!-- Amount -->
-            <Label text="Loan Amount:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-            <TextField fx:id="amountField" promptText="e.g. 50000" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                        <!-- Amount -->
+                        <VBox spacing="5" GridPane.rowIndex="2">
+                            <Label text="Loan Amount (Rs.)" style="-fx-font-weight: bold; -fx-text-fill: #4b5563;"/>
+                            <TextField fx:id="amountField" promptText="Enter loan amount" style="-fx-pref-height: 40;"/>
+                            <Label text="Minimum: Rs. 10,000 | Maximum: Rs. 10,000,000" style="-fx-text-fill: #9ca3af; -fx-font-size: 11px;"/>
+                        </VBox>
 
-            <!-- Interest Rate -->
-            <Label text="Interest Rate (% p.a):" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
-            <TextField fx:id="interestField" promptText="e.g. 12.5" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+                        <!-- Duration -->
+                        <VBox spacing="5" GridPane.rowIndex="3">
+                            <Label text="Duration (Months)" style="-fx-font-weight: bold; -fx-text-fill: #4b5563;"/>
+                            <ComboBox fx:id="durationCombo" promptText="Select duration..." maxWidth="Infinity" style="-fx-pref-height: 40;"/>
+                        </VBox>
+                        
+                        <!-- Interest Rate -->
+                        <VBox spacing="5" GridPane.rowIndex="4">
+                            <Label text="Interest Rate (Annual)" style="-fx-font-weight: bold; -fx-text-fill: #4b5563;"/>
+                            <TextField fx:id="interestField" promptText="Select loan type first (Read-only)" editable="false" style="-fx-pref-height: 40; -fx-background-color: #f3f4f6;"/>
+                        </VBox>
 
-            <!-- Tenure -->
-            <Label text="Duration (Months):" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
-            <TextField fx:id="durationField" promptText="e.g. 12" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+                         <!-- Start Date -->
+                        <VBox spacing="5" GridPane.rowIndex="5">
+                             <Label text="Start Date" style="-fx-font-weight: bold; -fx-text-fill: #4b5563;"/>
+                             <DatePicker fx:id="startDatePicker" maxWidth="Infinity" style="-fx-pref-height: 40;"/>
+                        </VBox>
 
-            <!-- Start Date -->
-            <Label text="Start Date:" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
-            <DatePicker fx:id="startDatePicker" maxWidth="Infinity" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+                    </GridPane>
+                </VBox>
 
-            <!-- EMI Preview -->
-            <Label text="Estimated EMI:" GridPane.rowIndex="6" GridPane.columnIndex="0" style="-fx-font-weight: bold;"/>
-            <Label fx:id="emiPreviewLabel" text="0.00" GridPane.rowIndex="6" GridPane.columnIndex="1" style="-fx-font-size: 16px; -fx-text-fill: #4CAF50;"/>
+                <HBox spacing="15" alignment="CENTER_RIGHT" style="-fx-padding: 20 0 0 0;">
+                     <Button text="Submit Application" onAction="#handleSubmit" styleClass="action-button" style="-fx-pref-height: 40; -fx-padding: 0 20;"/>
+                     <Button text="Clear" onAction="#handleClear" styleClass="secondary-button" style="-fx-pref-height: 40; -fx-padding: 0 20;"/>
+                </HBox>
+                
+                <Label fx:id="statusLabel" text=""/>
+            </VBox>
 
-            <!-- Buttons -->
-            <HBox spacing="15" alignment="CENTER_LEFT" GridPane.rowIndex="7" GridPane.columnIndex="1">
-                <Button text="Submit Application" onAction="#handleSubmit" styleClass="action-button"/>
-                <Button text="Clear" onAction="#handleClear" styleClass="secondary-button"/>
-            </HBox>
+            <!-- RIGHT: EMI Preview Card -->
+            <VBox styleClass="card" spacing="20" GridPane.columnIndex="1" alignment="TOP_CENTER" style="-fx-min-height: 300;">
+                 <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-background-color: #f0fdf4; -fx-padding: 10; -fx-background-radius: 8;">
+                     <Label text="EMI Preview" style="-fx-font-weight: bold; -fx-text-fill: #166534; -fx-font-size: 14px;"/>
+                     <Label text="Auto-calculated by API" style="-fx-text-fill: #86efac; -fx-font-size: 11px;"/>
+                 </HBox>
 
-            <!-- Status Message -->
-            <Label fx:id="statusLabel" text="" GridPane.rowIndex="8" GridPane.columnIndex="1"/>
+                 <VBox alignment="CENTER" spacing="10" VBox.vgrow="ALWAYS">
+                      <!-- Calculator Icon SVG or styling -->
+                      <Label text="Rs." style="-fx-font-size: 48px; -fx-text-fill: #e5e7eb; -fx-font-weight: bold;"/>
+                      <Label fx:id="emiPreviewLabel" text="0.00" style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #3730a3;"/>
+                      <Label text="Monthly EMI" style="-fx-text-fill: #6b7280;"/>
+                 </VBox>
+                 
+                 <Label text="Fill in the loan details to see EMI calculation" style="-fx-text-fill: #9ca3af; -fx-font-size: 12px; -fx-wrap-text: true; -fx-text-alignment: CENTER;"/>
+            </VBox>
 
         </GridPane>
     </center>

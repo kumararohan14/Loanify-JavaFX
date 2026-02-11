@@ -53,7 +53,17 @@ public class Loan {
     private Double outstandingAmount;
 
     public enum LoanType {
-        PERSONAL, VEHICLE, HOME, BUSINESS, EDUCATION
+        PERSONAL(15.0), VEHICLE(12.0), HOME(9.0), BUSINESS(14.0), EDUCATION(8.0);
+
+        private final double interestRate;
+
+        LoanType(double interestRate) {
+            this.interestRate = interestRate;
+        }
+
+        public double getInterestRate() {
+            return interestRate;
+        }
     }
 
     public enum LoanStatus {
