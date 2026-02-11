@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.text.Text?>
+
+<HBox xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.example.loanmanagement.controller.LoginController"
+            prefHeight="600.0" prefWidth="900.0"
+            styleClass="root">
+            
+    <!-- Left Panel: Branding -->
+    <VBox prefWidth="450.0" HBox.hgrow="ALWAYS" alignment="CENTER_LEFT" style="-fx-background-color: linear-gradient(to bottom right, #0f172a, #1a2332); -fx-padding: 60;">
+        <Label text="LoanPro" style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+        <Label text="Management System" style="-fx-font-size: 16px; -fx-text-fill: #8899aa;"/>
+        
+        <Label text="Streamline Your Loan Operations" wrapText="true" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: white; -fx-padding: 40 0 20 0;"/>
+        <Label text="A complete loan management solution for modern finance companies. Manage customers, track payments, and grow your business." 
+               wrapText="true" style="-fx-font-size: 14px; -fx-text-fill: #94a3b8; -fx-line-spacing: 5;"/>
+               
+        <HBox spacing="40" style="-fx-padding: 60 0 0 0;">
+            <VBox>
+                <Label text="1,200+" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+                <Label text="Active Loans" style="-fx-text-fill: #64748b;"/>
+            </VBox>
+            <VBox>
+                <Label text="Rs. 2.8M" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+                <Label text="Monthly Collection" style="-fx-text-fill: #64748b;"/>
+            </VBox>
+        </HBox>
+    </VBox>
+
+    <!-- Right Panel: Login Form -->
+    <VBox prefWidth="450.0" HBox.hgrow="ALWAYS" alignment="CENTER" style="-fx-background-color: #ffffff; -fx-padding: 60;">
+        <VBox spacing="20" maxWidth="350">
+            <Label text="Welcome back" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #1a2332;"/>
+            <Label text="Sign in to your account to continue" style="-fx-text-fill: #64748b;"/>
+            
+            <HBox spacing="10" alignment="CENTER">
+                 <ToggleButton fx:id="userTypeAdmin" text="Administrator" prefWidth="170" selected="true"/>
+                 <ToggleButton fx:id="userTypeStaff" text="Loan Officer" prefWidth="170"/>
+            </HBox>
+            
+            <VBox spacing="5">
+                <Label text="Email" style="-fx-text-fill: #1a2332; -fx-font-weight: bold;"/>
+                <TextField fx:id="emailField" promptText="name@company.com" text="admin@company.com"/>
+            </VBox>
+            
+            <VBox spacing="5">
+                 <Label text="Password" style="-fx-text-fill: #1a2332; -fx-font-weight: bold;"/>
+                 <PasswordField fx:id="passwordField" promptText="Enter your password" text="admin123"/>
+            </VBox>
+            
+            <Button text="Sign in" onAction="#handleLogin" maxWidth="Infinity" style="-fx-background-color: #1a2332; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10; -fx-cursor: hand;"/>
+            
+            <Label text="Demo credentials: Use admin@company.com / admin123" style="-fx-text-fill: #64748b; -fx-font-size: 12px;" alignment="CENTER" maxWidth="Infinity"/>
+        </VBox>
+    </VBox>
+
+</HBox>

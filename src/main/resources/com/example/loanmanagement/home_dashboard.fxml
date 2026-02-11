@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.chart.*?>
+
+<ScrollPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.example.loanmanagement.controller.HomeDashboardController"
+            fitToWidth="true" style="-fx-background-color: transparent;">
+    
+    <VBox spacing="30" style="-fx-padding: 0 20 20 0;">
+        <Label text="Dashboard" style="-fx-font-size: 28px; -fx-font-weight: bold;"/>
+        <Label text="Welcome back! Here's your loan portfolio overview." style="-fx-text-fill: -color-text-muted;"/>
+        
+        <!-- KPI Cards -->
+        <FlowPane hgap="20" vgap="20">
+             <VBox styleClass="card" prefWidth="180">
+                 <Label text="Total Loans" style="-fx-text-fill: -color-text-muted;"/>
+                 <Label fx:id="totalLoansLabel" text="0" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
+                 <Label text="+8.2% vs last month" style="-fx-text-fill: -color-success; -fx-font-size: 11px;"/>
+             </VBox>
+             <VBox styleClass="card" prefWidth="180">
+                 <Label text="Active Loans" style="-fx-text-fill: -color-text-muted;"/>
+                 <Label fx:id="activeLoansLabel" text="0" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
+                 <Label text="+5.4% vs last month" style="-fx-text-fill: -color-success; -fx-font-size: 11px;"/>
+             </VBox>
+             <VBox styleClass="card" prefWidth="180">
+                 <Label text="Overdue Loans" style="-fx-text-fill: -color-text-muted;"/>
+                 <Label fx:id="overdueLoansLabel" text="0" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: -color-destructive;"/>
+                 <Label text="-12.3% vs last month" style="-fx-text-fill: -color-destructive; -fx-font-size: 11px;"/>
+             </VBox>
+             <VBox styleClass="card" prefWidth="180">
+                 <Label text="Monthly Collection" style="-fx-text-fill: -color-text-muted;"/>
+                 <Label fx:id="collectionLabel" text="Rs. 0" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
+                 <Label text="+15.7% vs target" style="-fx-text-fill: -color-success; -fx-font-size: 11px;"/>
+             </VBox>
+             <VBox styleClass="card" prefWidth="180">
+                 <Label text="Total Customers" style="-fx-text-fill: -color-text-muted;"/>
+                 <Label fx:id="totalCustomersLabel" text="0" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
+                 <Label text="+3.2% vs last month" style="-fx-text-fill: -color-success; -fx-font-size: 11px;"/>
+             </VBox>
+               <VBox styleClass="card" prefWidth="180">
+                 <Label text="Pending Applications" style="-fx-text-fill: -color-text-muted;"/>
+                 <Label fx:id="pendingAppsLabel" text="0" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
+             </VBox>
+        </FlowPane>
+        
+        <HBox spacing="20">
+             <!-- Line Chart -->
+             <VBox styleClass="card" HBox.hgrow="ALWAYS">
+                 <Label text="EMI Collection Trend" style="-fx-font-weight: bold; -fx-padding: 0 0 10 0;"/>
+                 <LineChart fx:id="collectionChart" title="Monthly Collection">
+                    <xAxis><CategoryAxis label="Month"/></xAxis>
+                    <yAxis><NumberAxis label="Amount"/></yAxis>
+                 </LineChart>
+             </VBox>
+             
+             <!-- Pie Chart -->
+             <VBox styleClass="card" prefWidth="400">
+                 <Label text="Loan Distribution" style="-fx-font-weight: bold; -fx-padding: 0 0 10 0;"/>
+                 <PieChart fx:id="loanTypeChart" title="By Loan Type"/>
+             </VBox>
+        </HBox>
+        
+        <HBox spacing="20">
+             <!-- Recent Loans Table placeholder -->
+             <VBox styleClass="card" HBox.hgrow="ALWAYS">
+                  <Label text="Recent Loans" style="-fx-font-weight: bold; -fx-padding: 0 0 10 0;"/>
+                  <TableView fx:id="recentLoansTable" prefHeight="300">
+                      <columns>
+                          <TableColumn fx:id="colLoanId" text="Loan ID" prefWidth="100"/>
+                          <TableColumn fx:id="colCustomer" text="Customer" prefWidth="150"/>
+                          <TableColumn fx:id="colAmount" text="Amount" prefWidth="120"/>
+                          <TableColumn fx:id="colStatus" text="Status" prefWidth="100"/>
+                      </columns>
+                  </TableView>
+             </VBox>
+             
+             <!-- Quick Actions -->
+             <VBox styleClass="card" prefWidth="300" spacing="10">
+                  <Label text="Quick Actions" style="-fx-font-weight: bold;"/>
+                  <Button text="New Loan" styleClass="button-primary" maxWidth="Infinity" onAction="#handleNewLoan"/>
+                  <Button text="Add Customer" styleClass="button-secondary" maxWidth="Infinity" onAction="#handleAddCustomer"/>
+                  <Button text="Record Payment" styleClass="button-secondary" maxWidth="Infinity"/>
+                  <Button text="View Reports" styleClass="button-secondary" maxWidth="Infinity" onAction="#handleViewReports"/>
+             </VBox>
+        </HBox>
+
+    </VBox>
+</ScrollPane>

@@ -1,19 +1,54 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.layout.VBox?>
-<?import javafx.scene.text.Font?>
 
-<VBox alignment="CENTER" spacing="20.0" xmlns:fx="http://javafx.com/fxml"
-      fx:controller="com.example.loanmanagement.LoanApplication">
-    <padding>
-        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
-    </padding>
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.example.loanmanagement.controller.DashboardController"
+            fx:id="mainLayout"
+            prefHeight="800.0" prefWidth="1280.0"
+            styleClass="root">
 
-    <Label text="Welcome to Loan Management System">
-        <font>
-            <Font size="24.0"/>
-        </font>
-    </Label>
-</VBox>
+    <left>
+        <VBox prefWidth="250.0" styleClass="sidebar">
+            <VBox spacing="10" alignment="CENTER_LEFT" style="-fx-padding: 30 24;">
+                <Label text="LoanPro" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: -color-accent;"/>
+                <Label text="Management System" style="-fx-font-size: 13px; -fx-text-fill: -color-text-muted;"/>
+            </VBox>
+            
+            <VBox spacing="5" VBox.vgrow="ALWAYS" style="-fx-padding: 20 0;">
+                <Button text="Dashboard" onAction="#showDashboard" styleClass="sidebar-button" maxWidth="Infinity"/>
+                <Button text="Customers" onAction="#showCustomers" styleClass="sidebar-button" maxWidth="Infinity"/>
+                <Button text="Loan Application" onAction="#showLoanApplication" styleClass="sidebar-button" maxWidth="Infinity"/>
+                <Button text="Loans" onAction="#showLoans" styleClass="sidebar-button" maxWidth="Infinity"/>
+                <Button text="Payments" onAction="#showPayments" styleClass="sidebar-button" maxWidth="Infinity"/>
+                <Button text="Reports" onAction="#showReports" styleClass="sidebar-button" maxWidth="Infinity"/>
+                <Button text="Settings" onAction="#showSettings" styleClass="sidebar-button" maxWidth="Infinity"/>
+            </VBox>
+            
+            <VBox style="-fx-padding: 20;">
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Label text="LO" style="-fx-background-color: #1e2a3a; -fx-text-fill: white; -fx-padding: 8; -fx-background-radius: 20;"/>
+                    <VBox>
+                        <Label fx:id="userNameLabel" text="Loan Officer" style="-fx-font-weight: bold;"/>
+                        <Label fx:id="userRoleLabel" text="Staff" style="-fx-text-fill: -color-text-muted; -fx-font-size: 12px;"/>
+                    </VBox>
+                </HBox>
+                <Button text="Logout" onAction="#handleLogout" style="-fx-background-color: transparent; -fx-text-fill: #ef4444; -fx-padding: 10 0; -fx-alignment: CENTER_LEFT; -fx-cursor: hand;" maxWidth="Infinity"/>
+            </VBox>
+        </VBox>
+    </left>
+    
+    <center>
+        <!-- Content will be loaded dynamically -->
+        <StackPane style="-fx-padding: 30;">
+             <ProgressIndicator />
+        </StackPane>
+    </center>
+
+</BorderPane>

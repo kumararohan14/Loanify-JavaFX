@@ -1,0 +1,202 @@
+/* Global Variables (Light Theme Default) */
+.root {
+    -fx-base: #f3f4f6;
+    -fx-background-color: #f3f4f6;
+    -fx-control-inner-background: #ffffff;
+    -fx-control-inner-background-alt: #f9fafb;
+    -fx-text-fill: #1f2937;
+    -fx-prompt-text-fill: #9ca3af;
+
+    /* Colors */
+    -color-primary: #ffffff;
+    -color-sidebar: #111827;
+    /* Dark Sidebar */
+    -color-card: #ffffff;
+    -color-accent: #10b981;
+    /* Emerald 500 */
+    -color-text-primary: #111827;
+    -color-text-secondary: #4b5563;
+    -color-text-muted: #6b7280;
+    -color-success: #059669;
+    -color-warning: #d97706;
+    -color-destructive: #dc2626;
+    -color-border: #e5e7eb;
+
+    -fx-font-family: "Segoe UI", "Inter", "SF Pro Display", sans-serif;
+    -fx-font-size: 14px;
+}
+
+/* Sidebar (Dark Theme Override) */
+.sidebar {
+    -fx-background-color: -color-sidebar;
+    -fx-border-color: transparent;
+}
+
+.sidebar .label {
+    -fx-text-fill: #e5e7eb;
+}
+
+.sidebar-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #9ca3af;
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 12 24;
+    -fx-cursor: hand;
+    -fx-font-size: 15px;
+}
+
+.sidebar-button:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.05);
+    -fx-text-fill: #f3f4f6;
+}
+
+.sidebar-button.active {
+    -fx-background-color: rgba(16, 185, 129, 0.1);
+    -fx-text-fill: -color-accent;
+    -fx-border-color: transparent transparent transparent -color-accent;
+    -fx-border-width: 0 0 0 4;
+}
+
+/* Cards (Light Theme) */
+.card {
+    -fx-background-color: -color-card;
+    -fx-background-radius: 12;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.05), 10, 0, 0, 4);
+    -fx-padding: 24;
+    -fx-border-color: -color-border;
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+}
+
+/* Headings */
+.header-label {
+    -fx-text-fill: -color-text-primary;
+    -fx-font-weight: bold;
+}
+
+.sub-header-label {
+    -fx-text-fill: -color-text-muted;
+}
+
+/* Buttons */
+.button-primary {
+    -fx-background-color: -color-accent;
+    -fx-text-fill: white;
+    -fx-background-radius: 8;
+    -fx-font-weight: bold;
+    -fx-padding: 10 20;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(three-pass-box, rgba(16, 185, 129, 0.2), 5, 0, 0, 2);
+}
+
+.button-primary:hover {
+    -fx-background-color: derive(-color-accent, -10%);
+}
+
+.button-secondary {
+    -fx-background-color: white;
+    -fx-border-color: -color-border;
+    -fx-border-radius: 8;
+    -fx-text-fill: -color-text-primary;
+    -fx-padding: 9 19;
+    -fx-cursor: hand;
+}
+
+.button-secondary:hover {
+    -fx-background-color: #f9fafb;
+    -fx-border-color: #d1d5db;
+}
+
+/* Text Inputs */
+.text-field,
+.password-field,
+.combo-box,
+.date-picker {
+    -fx-background-color: #ffffff;
+    -fx-border-color: -color-border;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-text-fill: -color-text-primary;
+    -fx-padding: 10;
+}
+
+.text-field:focused,
+.password-field:focused {
+    -fx-border-color: -color-accent;
+    -fx-effect: dropshadow(three-pass-box, rgba(16, 185, 129, 0.1), 5, 0, 0, 0);
+}
+
+/* Table View */
+.table-view {
+    -fx-background-color: transparent;
+    -fx-border-color: -color-border;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+}
+
+.table-view .column-header-background {
+    -fx-background-color: #f9fafb;
+    -fx-border-color: transparent transparent -color-border transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.table-view .column-header .label {
+    -fx-text-fill: -color-text-secondary;
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+}
+
+.table-row-cell {
+    -fx-background-color: #ffffff;
+    -fx-border-color: transparent transparent -color-border transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.table-row-cell:odd {
+    -fx-background-color: #fcfcfc;
+}
+
+.table-row-cell:selected {
+    -fx-background-color: rgba(16, 185, 129, 0.05);
+}
+
+.table-cell {
+    -fx-text-fill: -color-text-primary;
+    -fx-alignment: CENTER_LEFT;
+}
+
+/* Charts */
+.chart-title {
+    -fx-text-fill: -color-text-primary;
+}
+
+.axis-label {
+    -fx-text-fill: -color-text-muted;
+}
+
+.axis {
+    -fx-tick-label-fill: -color-text-muted;
+}
+
+/* Status Badges */
+.status-badge {
+    -fx-padding: 4 10;
+    -fx-background-radius: 12;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+.status-active {
+    -fx-background-color: rgba(16, 185, 129, 0.1);
+    -fx-text-fill: -color-success;
+}
+
+.status-overdue {
+    -fx-background-color: rgba(220, 38, 38, 0.1);
+    -fx-text-fill: -color-destructive;
+}
+
+.status-pending {
+    -fx-background-color: rgba(217, 119, 6, 0.1);
+    -fx-text-fill: -color-warning;
+}
