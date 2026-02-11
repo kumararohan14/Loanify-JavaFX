@@ -163,10 +163,11 @@ public class CustomersController {
 
     private final Button btnEdit = new Button();
     private final Button btnDelete = new Button();
-    private final Button btnResendOtp = new Button("Resend OTP");
     private final HBox pane = new HBox(8);
 
     {
+        pane.setAlignment(javafx.geometry.Pos.CENTER);
+
         // ===== EDIT BUTTON =====
         javafx.scene.shape.SVGPath editIcon = new javafx.scene.shape.SVGPath();
         editIcon.setContent("M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1.003 1.003 0 000-1.42l-2.34-2.34a1.003 1.003 0 00-1.42 0l-1.83 1.83 3.75 3.75 1.84-1.82z");
@@ -190,37 +191,36 @@ public class CustomersController {
             Customer customer = getTableRow().getItem();
             if (customer != null) handleDeleteCustomer(customer);
         });
-
-        // ===== RESEND OTP BUTTON =====
-        btnResendOtp.setStyle("-fx-background-color: #facc15; -fx-cursor: hand;");
-        btnResendOtp.setTooltip(new Tooltip("Resend OTP"));
-        btnResendOtp.setOnAction(e -> {
-            Customer customer = getTableRow().getItem();
-            if (customer != null && customer.getStatus() == Customer.Status.PENDING) {
-                try {
-                    customerService.resendOtp(customer.getNic());
-                } catch (SmsSendingException e1) {
-                    e1.printStackTrace();
-                }
-            }
-        });
-
-        pane.setAlignment(javafx.geometry.Pos.CENTER);
     }
 
     @Override
     protected void updateItem(Void item, boolean empty) {
         super.updateItem(item, empty);
+
         if (empty || getTableRow() == null || getTableRow().getItem() == null) {
             setGraphic(null);
         } else {
             Customer customer = getTableRow().getItem();
             pane.getChildren().clear();
+
+            // Always add Edit + Delete
             pane.getChildren().addAll(btnEdit, btnDelete);
-            // Only add Resend OTP if status is PENDING
+
+            // Dynamically add Resend OTP **only if status is PENDING**
             if (customer.getStatus() == Customer.Status.PENDING) {
+                Button btnResendOtp = new Button("Resend OTP");
+                btnResendOtp.setStyle("-fx-background-color: #facc15; -fx-cursor: hand;");
+                btnResendOtp.setTooltip(new Tooltip("Resend OTP"));
+                btnResendOtp.setOnAction(e -> {
+                    try {
+                        customerService.resendOtp(customer.getNic());
+                    } catch (SmsSendingException e1) {
+                        e1.printStackTrace();
+                    }
+                });
                 pane.getChildren().add(btnResendOtp);
             }
+
             setGraphic(pane);
         }
     }
