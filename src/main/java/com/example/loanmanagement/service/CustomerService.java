@@ -58,27 +58,36 @@ public class CustomerService {
         return true;
     }
 
-    public void resendOtp(String nic) throws SmsSendingException{
-        Customer customer = customerDAO.findByNic(nic);
-        if (customer == null) {
-            throw new IllegalArgumentException("Customer not found");
-        }
-        
-        // Generate new 6-digit OTP
-        String otp = String.format("%06d", new java.util.Random().nextInt(999999));
-        customer.setOtp(otp);
-        customer.setOtpExpiry(java.time.LocalDateTime.now().plusMinutes(5));
-        
-        customerDAO.update(customer);
-        
-        // Send OTP via SMS
-        if (customer.getPhone() != null && !customer.getPhone().isEmpty()) {
-            String formattedPhone = formatPhoneNumber(customer.getPhone());
-            smsService.sendSms(formattedPhone, "Your new OTP for Loanify is: " + otp);
-        } else {
-             throw new IllegalArgumentException("Customer does not have a phone number to receive OTP.");
-        }
+    public void resendOtp(String nic) throws SmsSendingException {
+    Customer customer = customerDAO.findByNic(nic);
+    if (customer == null) {
+        throw new IllegalArgumentException("Customer not found");
     }
+
+    // Check if customer has a phone number
+    if (customer.getPhone() == null || customer.getPhone().isEmpty()) {
+        throw new IllegalArgumentException("Customer does not have a phone number to receive OTP.");
+    }
+
+    // Generate a new 6-digit OTP
+    String otp = String.format("%06d", new java.util.Random().nextInt(999999));
+    customer.setOtp(otp);
+    customer.setOtpExpiry(java.time.LocalDateTime.now().plusMinutes(5));
+
+    // Update customer in DB
+    customerDAO.update(customer);
+
+    // Send OTP via SMS
+    String formattedPhone = formatPhoneNumber(customer.getPhone());
+    try {
+        smsService.sendSms(formattedPhone, "Your new OTP for Loanify is: " + otp);
+    } catch (SmsSendingException e) {
+        // Log and rethrow for controller to handle retry
+        System.err.println("Failed to resend OTP to " + formattedPhone + ": " + e.getMessage());
+        throw e;
+    }
+}
+
 
     private String formatPhoneNumber(String phone) {
         if (phone == null) return null;
