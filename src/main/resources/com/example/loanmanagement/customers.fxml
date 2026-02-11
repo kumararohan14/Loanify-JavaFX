@@ -11,56 +11,89 @@
             fx:controller="com.example.loanmanagement.controller.CustomersController"
             fitToWidth="true" style="-fx-background-color: transparent;">
 
-    <VBox spacing="20" style="-fx-padding: 0 20 20 0;">
+    <!-- Added small left padding (15px) -->
+    <VBox spacing="20" style="-fx-padding: 0 20 20 15;">
         
         <!-- Header Row -->
         <HBox alignment="CENTER_LEFT" spacing="20">
             <VBox>
-                <Label text="Customer Management" styleClass="header-label" style="-fx-font-size: 24px;"/>
-                <Label text="Manage your customer database" styleClass="sub-header-label"/>
+                <Label text="Customer Management" 
+                       styleClass="header-label" 
+                       style="-fx-font-size: 24px;"/>
+                <Label text="Manage your customer database" 
+                       styleClass="sub-header-label"/>
             </VBox>
             <Region HBox.hgrow="ALWAYS"/>
-             <HBox spacing="10" alignment="CENTER_LEFT" style="-fx-background-color: white; -fx-background-radius: 8; -fx-padding: 5 10; -fx-border-color: -color-border; -fx-border-radius: 8;">
-                 <Label text="🔍" style="-fx-text-fill: -color-text-muted;"/>
-                 <TextField promptText="Search..." style="-fx-background-color: transparent; -fx-border-color: transparent; -fx-padding: 5;" prefWidth="200"/>
-             </HBox>
-             <Button text="🔔" styleClass="button-secondary"/>
-             <Button text="User" style="-fx-background-color: #1e2a3a; -fx-text-fill: white; -fx-background-radius: 20; -fx-min-width: 32; -fx-min-height: 32;"/>
+            
+            <HBox spacing="10" alignment="CENTER_LEFT"
+                  style="-fx-background-color: white; -fx-background-radius: 8; -fx-padding: 5 10; -fx-border-color: -color-border; -fx-border-radius: 8;">
+                <Label text="🔍" style="-fx-text-fill: -color-text-muted;"/>
+                <TextField promptText="Search..."
+                           style="-fx-background-color: transparent; -fx-border-color: transparent; -fx-padding: 5;"
+                           prefWidth="200"/>
+            </HBox>
+            
+            <Button text="🔔" styleClass="button-secondary"/>
+            
+            <Button text="User"
+                    style="-fx-background-color: #1e2a3a; -fx-text-fill: white; -fx-background-radius: 20; -fx-min-width: 32; -fx-min-height: 32;"/>
         </HBox>
 
         <!-- Search and Filter Row -->
         <HBox spacing="15" alignment="CENTER_LEFT">
-             <HBox HBox.hgrow="ALWAYS" spacing="10" style="-fx-background-color: white; -fx-background-radius: 8; -fx-padding: 8; -fx-border-color: -color-border; -fx-border-radius: 8;">
-                 <Label text="🔍" style="-fx-text-fill: -color-text-muted; -fx-padding: 5;"/>
-                 <TextField promptText="Search by name, ID, or phone..." style="-fx-background-color: transparent; -fx-border-color: transparent;" HBox.hgrow="ALWAYS"/>
-                 <Button text="Filter" styleClass="button-secondary"/>
-             </HBox>
-             <Button text="+ Add Customer" styleClass="button-primary" onAction="#handleAddCustomer" style="-fx-background-color: #10b981;"/>
+            
+            <HBox HBox.hgrow="ALWAYS" spacing="10"
+                  style="-fx-background-color: white; -fx-background-radius: 8; -fx-padding: 8; -fx-border-color: -color-border; -fx-border-radius: 8;">
+                <Label text="🔍" style="-fx-text-fill: -color-text-muted; -fx-padding: 5;"/>
+                <TextField promptText="Search by name, ID, or phone..."
+                           style="-fx-background-color: transparent; -fx-border-color: transparent;"
+                           HBox.hgrow="ALWAYS"/>
+                <Button text="Filter" styleClass="button-secondary"/>
+            </HBox>
+            
+            <Button text="+ Add Customer"
+                    styleClass="button-primary"
+                    onAction="#handleAddCustomer"
+                    style="-fx-background-color: #10b981;"/>
         </HBox>
 
         <!-- Stats Cards Row -->
         <HBox spacing="20">
+            
             <VBox styleClass="card" HBox.hgrow="ALWAYS">
                 <Label text="Total Customers" styleClass="sub-header-label"/>
-                <Label fx:id="totalCustomersLabel" text="0" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
+                <Label fx:id="totalCustomersLabel"
+                       text="0"
+                       style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
             </VBox>
+            
             <VBox styleClass="card" HBox.hgrow="ALWAYS">
                 <Label text="Active" styleClass="sub-header-label"/>
-                <Label fx:id="activeCustomersLabel" text="0" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: -color-success;"/>
+                <Label fx:id="activeCustomersLabel"
+                       text="0"
+                       style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: -color-success;"/>
             </VBox>
+            
             <VBox styleClass="card" HBox.hgrow="ALWAYS">
                 <Label text="With Active Loans" styleClass="sub-header-label"/>
-                <Label fx:id="withActiveLoansLabel" text="0" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: -color-accent;"/>
+                <Label fx:id="withActiveLoansLabel"
+                       text="0"
+                       style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: -color-accent;"/>
             </VBox>
+            
             <VBox styleClass="card" HBox.hgrow="ALWAYS">
                 <Label text="Inactive" styleClass="sub-header-label"/>
-                <Label fx:id="inactiveCustomersLabel" text="0" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: -color-text-muted;"/>
+                <Label fx:id="inactiveCustomersLabel"
+                       text="0"
+                       style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: -color-text-muted;"/>
             </VBox>
         </HBox>
 
         <!-- Customers Table -->
         <VBox styleClass="card" VBox.vgrow="ALWAYS">
-            <TableView fx:id="customersTable" VBox.vgrow="ALWAYS" minHeight="400">
+            <TableView fx:id="customersTable"
+                       VBox.vgrow="ALWAYS"
+                       minHeight="400">
                 <columns>
                     <TableColumn fx:id="colName" text="Customer" prefWidth="250"/>
                     <TableColumn fx:id="colNic" text="NIC / ID" prefWidth="150"/>

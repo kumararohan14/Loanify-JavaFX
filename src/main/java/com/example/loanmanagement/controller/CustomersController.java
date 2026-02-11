@@ -160,9 +160,38 @@ public class CustomersController {
 
         // Actions Column
         colAction.setCellFactory(col -> new TableCell<Customer, Void>() {
-            private final Button btn = new Button("...");
+            private final Button btnDelete = new Button();
+            private final HBox pane = new HBox(5);
+            
             {
-                btn.setStyle("-fx-background-color: transparent; -fx-font-weight: bold; -fx-cursor: hand;");
+                // SVG Path for Trash Can (Material Design)
+                javafx.scene.shape.SVGPath trashIcon = new javafx.scene.shape.SVGPath();
+                trashIcon.setContent("M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z");
+                trashIcon.setFill(javafx.scene.paint.Color.web("#ef4444")); // Red color
+                
+                btnDelete.setGraphic(trashIcon);
+                // Style: Transparent background, padding for click area
+                btnDelete.setStyle("-fx-background-color: transparent; -fx-cursor: hand; -fx-padding: 5 10 5 10;");
+                
+                // Hover effect
+                btnDelete.setOnMouseEntered(e -> {
+                    btnDelete.setStyle("-fx-background-color: #fee2e2; -fx-cursor: hand; -fx-padding: 5 10 5 10; -fx-background-radius: 5;");
+                });
+                btnDelete.setOnMouseExited(e -> {
+                    btnDelete.setStyle("-fx-background-color: transparent; -fx-cursor: hand; -fx-padding: 5 10 5 10;");
+                });
+
+                btnDelete.setTooltip(new Tooltip("Delete Customer"));
+
+                pane.setAlignment(javafx.geometry.Pos.CENTER);
+                pane.getChildren().add(btnDelete);
+                
+                btnDelete.setOnAction(event -> {
+                    Customer customer = getTableRow().getItem();
+                    if (customer != null) {
+                        handleDeleteCustomer(customer);
+                    }
+                });
             }
 
             @Override
@@ -171,7 +200,7 @@ public class CustomersController {
                 if (empty) {
                     setGraphic(null);
                 } else {
-                    setGraphic(btn);
+                    setGraphic(pane);
                 }
             }
         });
@@ -271,6 +300,8 @@ public class CustomersController {
         result.ifPresent(customer -> {
             try {
                 customerService.addCustomer(customer);
+                // Prompt for OTP
+                showOtpVerificationDialog(customer);
                 loadCustomers(); // Refresh table
             } catch (Exception e) {
                 Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -280,5 +311,83 @@ public class CustomersController {
                 alert.showAndWait();
             }
         });
+    }
+
+    private void showOtpVerificationDialog(Customer customer) {
+        com.example.loanmanagement.util.OtpDialog otpDialog = new com.example.loanmanagement.util.OtpDialog(customer.getPhone());
+        
+        otpDialog.setOnResend(() -> {
+            try {
+                customerService.resendOtp(customer.getNic());
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("OTP Resent");
+                alert.setHeaderText(null);
+                alert.setContentText("A new OTP has been sent to " + customer.getPhone());
+                alert.showAndWait();
+            } catch (Exception e) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Error");
+                alert.setContentText("Failed to resend OTP: " + e.getMessage());
+                alert.showAndWait();
+            }
+        });
+
+        Optional<String> otpResult = otpDialog.showAndWait();
+        if (otpResult.isPresent()) {
+            try {
+                boolean verified = customerService.verifyOtp(customer.getNic(), otpResult.get());
+                if (verified) {
+                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                    alert.setTitle("Success");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Customer verified successfully!");
+                    alert.showAndWait();
+                } else {
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setTitle("Verification Failed");
+                    alert.setHeaderText("Invalid OTP");
+                    alert.setContentText("The OTP you entered is incorrect. Please try again.");
+                    alert.showAndWait();
+                    // Recursively show dialog again on failure? 
+                    // For now, let's just show the dialog again if they failed, giving them a chance to retry.
+                    showOtpVerificationDialog(customer);
+                }
+            } catch (Exception e) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Error");
+                alert.setContentText(e.getMessage());
+                alert.showAndWait();
+            }
+        } else {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Verification Pending");
+            alert.setContentText("Customer saved but not verified. Status is PENDING.");
+            alert.showAndWait();
+        }
+    }
+    private void handleDeleteCustomer(Customer customer) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Delete Customer");
+        alert.setHeaderText("Delete " + customer.getName() + "?");
+        alert.setContentText("Are you sure you want to delete this customer? This action cannot be undone.");
+
+        Optional<ButtonType> result = alert.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            try {
+                customerService.deleteCustomer(customer.getId());
+                loadCustomers(); // Refresh table
+                
+                Alert success = new Alert(Alert.AlertType.INFORMATION);
+                success.setTitle("Success");
+                success.setContentText("Customer deleted successfully.");
+                success.showAndWait();
+            } catch (Exception e) {
+                Alert error = new Alert(Alert.AlertType.ERROR);
+                error.setTitle("Error");
+                error.setHeaderText("Could not delete customer");
+                error.setContentText(e.getMessage());
+                error.showAndWait();
+            }
+        }
     }
 }

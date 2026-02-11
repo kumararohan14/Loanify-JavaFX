@@ -13,7 +13,9 @@
             fx:controller="com.example.loanmanagement.controller.HomeDashboardController"
             fitToWidth="true" style="-fx-background-color: transparent;">
     
-    <VBox spacing="30" style="-fx-padding: 0 20 20 0;">
+    <!-- Added small left padding (15px) -->
+    <VBox spacing="30" style="-fx-padding: 0 20 20 15;">
+        
         <Label text="Dashboard" style="-fx-font-size: 28px; -fx-font-weight: bold;"/>
         <Label text="Welcome back! Here's your loan portfolio overview." style="-fx-text-fill: -color-text-muted;"/>
         
@@ -24,39 +26,50 @@
                  <Label fx:id="totalLoansLabel" text="0" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
                  <Label text="+8.2% vs last month" style="-fx-text-fill: -color-success; -fx-font-size: 11px;"/>
              </VBox>
+             
              <VBox styleClass="card" prefWidth="180">
                  <Label text="Active Loans" style="-fx-text-fill: -color-text-muted;"/>
                  <Label fx:id="activeLoansLabel" text="0" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
                  <Label text="+5.4% vs last month" style="-fx-text-fill: -color-success; -fx-font-size: 11px;"/>
              </VBox>
+             
              <VBox styleClass="card" prefWidth="180">
                  <Label text="Overdue Loans" style="-fx-text-fill: -color-text-muted;"/>
                  <Label fx:id="overdueLoansLabel" text="0" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: -color-destructive;"/>
                  <Label text="-12.3% vs last month" style="-fx-text-fill: -color-destructive; -fx-font-size: 11px;"/>
              </VBox>
+             
              <VBox styleClass="card" prefWidth="180">
                  <Label text="Monthly Collection" style="-fx-text-fill: -color-text-muted;"/>
                  <Label fx:id="collectionLabel" text="Rs. 0" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
                  <Label text="+15.7% vs target" style="-fx-text-fill: -color-success; -fx-font-size: 11px;"/>
              </VBox>
+             
              <VBox styleClass="card" prefWidth="180">
                  <Label text="Total Customers" style="-fx-text-fill: -color-text-muted;"/>
                  <Label fx:id="totalCustomersLabel" text="0" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
                  <Label text="+3.2% vs last month" style="-fx-text-fill: -color-success; -fx-font-size: 11px;"/>
              </VBox>
-               <VBox styleClass="card" prefWidth="180">
+             
+             <VBox styleClass="card" prefWidth="180">
                  <Label text="Pending Applications" style="-fx-text-fill: -color-text-muted;"/>
                  <Label fx:id="pendingAppsLabel" text="0" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
              </VBox>
         </FlowPane>
         
+        <!-- Charts Section -->
         <HBox spacing="20">
+             
              <!-- Line Chart -->
              <VBox styleClass="card" HBox.hgrow="ALWAYS">
                  <Label text="EMI Collection Trend" style="-fx-font-weight: bold; -fx-padding: 0 0 10 0;"/>
                  <LineChart fx:id="collectionChart" title="Monthly Collection">
-                    <xAxis><CategoryAxis label="Month"/></xAxis>
-                    <yAxis><NumberAxis label="Amount"/></yAxis>
+                    <xAxis>
+                        <CategoryAxis label="Month"/>
+                    </xAxis>
+                    <yAxis>
+                        <NumberAxis label="Amount"/>
+                    </yAxis>
                  </LineChart>
              </VBox>
              
@@ -67,8 +80,10 @@
              </VBox>
         </HBox>
         
+        <!-- Bottom Section -->
         <HBox spacing="20">
-             <!-- Recent Loans Table placeholder -->
+             
+             <!-- Recent Loans Table -->
              <VBox styleClass="card" HBox.hgrow="ALWAYS">
                   <Label text="Recent Loans" style="-fx-font-weight: bold; -fx-padding: 0 0 10 0;"/>
                   <TableView fx:id="recentLoansTable" prefHeight="300">

@@ -26,6 +26,8 @@ public class Customer {
     private String phone;
     private String nic;
     private String address;
+    private String otp;
+    private LocalDateTime otpExpiry;
 
     @Column(name = "active_loans")
     private int activeLoans;
@@ -41,6 +43,6 @@ public class Customer {
     private LocalDateTime createdAt;
 
     public enum Status {
-        ACTIVE, INACTIVE
+        ACTIVE, INACTIVE, PENDING
     }
 }
