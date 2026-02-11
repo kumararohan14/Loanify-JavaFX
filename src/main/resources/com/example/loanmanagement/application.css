@@ -200,3 +200,8 @@
     -fx-background-color: rgba(217, 119, 6, 0.1);
     -fx-text-fill: -color-warning;
 }
+
+.status-inactive {
+    -fx-background-color: rgba(107, 114, 128, 0.1);
+    -fx-text-fill: -color-text-muted;
+}

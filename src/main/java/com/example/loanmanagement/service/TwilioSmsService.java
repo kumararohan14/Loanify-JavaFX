@@ -1,5 +1,6 @@
 package com.example.loanmanagement.service;
 
+import com.example.loanmanagement.exception.SmsSendingException;
 import com.twilio.Twilio;
 import com.twilio.rest.api.v2010.account.Message;
 import com.twilio.type.PhoneNumber;
@@ -53,24 +54,23 @@ public class TwilioSmsService implements SmsService {
     }
 
     @Override
-    public void sendSms(String phoneNumber, String messageBody) {
-        if (!isValidConfig()) {
-             System.err.println("Twilio credentials not set. CANNOT SEND REAL SMS to " + phoneNumber);
-             // Fail silently or throw exception? User asked for "real not mock".
-             // Let's print to console so they know why it didn't send.
-             return;
-        }
-
-        try {
-            Message message = Message.creator(
-                    new PhoneNumber(phoneNumber),
-                    new PhoneNumber(fromPhoneNumber),
-                    messageBody
-            ).create();
-            System.out.println("SMS sent successfully. SID: " + message.getSid());
-        } catch (Exception e) {
-            System.err.println("Failed to send SMS: " + e.getMessage());
-            e.printStackTrace();
-        }
+    public void sendSms(String phoneNumber, String messageBody) throws SmsSendingException {
+    if (!isValidConfig()) {
+        throw new SmsSendingException("Twilio credentials are not configured properly.");
     }
+
+    try {
+        Message message = Message.creator(
+                new PhoneNumber(phoneNumber),
+                new PhoneNumber(fromPhoneNumber),
+                messageBody
+        ).create();
+
+        System.out.println("SMS sent successfully. SID: " + message.getSid());
+
+    } catch (Exception e) {
+        throw new SmsSendingException("Failed to send SMS: " + e.getMessage(), e);
+    }
+}
+
 }

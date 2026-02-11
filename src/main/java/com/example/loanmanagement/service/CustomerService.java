@@ -1,6 +1,7 @@
 package com.example.loanmanagement.service;
 
 import com.example.loanmanagement.dao.CustomerDAO;
+import com.example.loanmanagement.exception.SmsSendingException;
 import com.example.loanmanagement.model.Customer;
 
 import java.util.List;
@@ -15,7 +16,7 @@ public class CustomerService {
         this.smsService = new TwilioSmsService();
     }
 
-    public void addCustomer(Customer customer) {
+    public void addCustomer(Customer customer) throws SmsSendingException{
         if (customerDAO.findByNic(customer.getNic()) != null) {
             throw new IllegalArgumentException("Customer with this NIC already exists");
         }
@@ -57,7 +58,7 @@ public class CustomerService {
         return true;
     }
 
-    public void resendOtp(String nic) {
+    public void resendOtp(String nic) throws SmsSendingException{
         Customer customer = customerDAO.findByNic(nic);
         if (customer == null) {
             throw new IllegalArgumentException("Customer not found");

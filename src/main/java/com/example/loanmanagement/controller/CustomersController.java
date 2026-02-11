@@ -1,5 +1,6 @@
 package com.example.loanmanagement.controller;
 
+import com.example.loanmanagement.exception.SmsSendingException;
 import com.example.loanmanagement.model.Customer;
 import com.example.loanmanagement.service.CustomerService;
 import javafx.collections.FXCollections;
@@ -158,52 +159,66 @@ public class CustomersController {
             }
         });
 
-        // Actions Column
         colAction.setCellFactory(col -> new TableCell<Customer, Void>() {
-            private final Button btnDelete = new Button();
-            private final HBox pane = new HBox(5);
-            
-            {
-                // SVG Path for Trash Can (Material Design)
-                javafx.scene.shape.SVGPath trashIcon = new javafx.scene.shape.SVGPath();
-                trashIcon.setContent("M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z");
-                trashIcon.setFill(javafx.scene.paint.Color.web("#ef4444")); // Red color
-                
-                btnDelete.setGraphic(trashIcon);
-                // Style: Transparent background, padding for click area
-                btnDelete.setStyle("-fx-background-color: transparent; -fx-cursor: hand; -fx-padding: 5 10 5 10;");
-                
-                // Hover effect
-                btnDelete.setOnMouseEntered(e -> {
-                    btnDelete.setStyle("-fx-background-color: #fee2e2; -fx-cursor: hand; -fx-padding: 5 10 5 10; -fx-background-radius: 5;");
-                });
-                btnDelete.setOnMouseExited(e -> {
-                    btnDelete.setStyle("-fx-background-color: transparent; -fx-cursor: hand; -fx-padding: 5 10 5 10;");
-                });
 
-                btnDelete.setTooltip(new Tooltip("Delete Customer"));
+    private final Button btnEdit = new Button();
+    private final Button btnDelete = new Button();
+    private final HBox pane = new HBox(8);
 
-                pane.setAlignment(javafx.geometry.Pos.CENTER);
-                pane.getChildren().add(btnDelete);
-                
-                btnDelete.setOnAction(event -> {
-                    Customer customer = getTableRow().getItem();
-                    if (customer != null) {
-                        handleDeleteCustomer(customer);
-                    }
-                });
-            }
+    {
+        // ===== EDIT ICON (Pencil SVG) =====
+        javafx.scene.shape.SVGPath editIcon = new javafx.scene.shape.SVGPath();
+        editIcon.setContent("M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1.003 1.003 0 000-1.42l-2.34-2.34a1.003 1.003 0 00-1.42 0l-1.83 1.83 3.75 3.75 1.84-1.82z");
+        editIcon.setFill(javafx.scene.paint.Color.web("#3b82f6")); // Blue
 
-            @Override
-            protected void updateItem(Void item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty) {
-                    setGraphic(null);
-                } else {
-                    setGraphic(pane);
-                }
+        btnEdit.setGraphic(editIcon);
+        btnEdit.setStyle("-fx-background-color: transparent; -fx-cursor: hand; -fx-padding: 5;");
+        btnEdit.setTooltip(new Tooltip("Edit Customer"));
+
+        btnEdit.setOnMouseEntered(e ->
+                btnEdit.setStyle("-fx-background-color: #e0f2fe; -fx-background-radius: 5; -fx-cursor: hand; -fx-padding: 5;"));
+        btnEdit.setOnMouseExited(e ->
+                btnEdit.setStyle("-fx-background-color: transparent; -fx-cursor: hand; -fx-padding: 5;"));
+
+        btnEdit.setOnAction(event -> {
+            Customer customer = getTableRow().getItem();
+            if (customer != null) {
+                handleEditCustomer(customer);
             }
         });
+
+        // ===== DELETE ICON (Your Existing Trash) =====
+        javafx.scene.shape.SVGPath trashIcon = new javafx.scene.shape.SVGPath();
+        trashIcon.setContent("M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z");
+        trashIcon.setFill(javafx.scene.paint.Color.web("#ef4444"));
+
+        btnDelete.setGraphic(trashIcon);
+        btnDelete.setStyle("-fx-background-color: transparent; -fx-cursor: hand; -fx-padding: 5;");
+        btnDelete.setTooltip(new Tooltip("Delete Customer"));
+
+        btnDelete.setOnMouseEntered(e ->
+                btnDelete.setStyle("-fx-background-color: #fee2e2; -fx-background-radius: 5; -fx-cursor: hand; -fx-padding: 5;"));
+        btnDelete.setOnMouseExited(e ->
+                btnDelete.setStyle("-fx-background-color: transparent; -fx-cursor: hand; -fx-padding: 5;"));
+
+        btnDelete.setOnAction(event -> {
+            Customer customer = getTableRow().getItem();
+            if (customer != null) {
+                handleDeleteCustomer(customer);
+            }
+        });
+
+        pane.setAlignment(javafx.geometry.Pos.CENTER);
+        pane.getChildren().addAll(btnEdit, btnDelete);
+    }
+
+    @Override
+    protected void updateItem(Void item, boolean empty) {
+        super.updateItem(item, empty);
+        setGraphic(empty ? null : pane);
+    }
+});
+
     }
 
     private void loadCustomers() {
@@ -298,19 +313,46 @@ public class CustomersController {
         Optional<Customer> result = dialog.showAndWait();
 
         result.ifPresent(customer -> {
+    try {
+        customerService.addCustomer(customer);
+        // OTP sent successfully
+        showOtpVerificationDialog(customer);
+        loadCustomers();
+    } catch (SmsSendingException e) {
+        // Customer saved, but SMS failed
+        Alert smsAlert = new Alert(Alert.AlertType.WARNING);
+        smsAlert.setTitle("OTP Not Sent");
+        smsAlert.setHeaderText("Customer saved but OTP could not be sent");
+        smsAlert.setContentText(
+                "Failed to send OTP to: " + customer.getPhone() +
+                "\nReason: " + e.getMessage() +
+                "\nClick 'Retry' to resend OTP."
+        );
+
+        ButtonType retryBtn = new ButtonType("Retry");
+        smsAlert.getButtonTypes().setAll(retryBtn, ButtonType.CANCEL);
+
+        Optional<ButtonType> response = smsAlert.showAndWait();
+        if (response.isPresent() && response.get() == retryBtn) {
             try {
-                customerService.addCustomer(customer);
-                // Prompt for OTP
-                showOtpVerificationDialog(customer);
-                loadCustomers(); // Refresh table
-            } catch (Exception e) {
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Error");
-                alert.setHeaderText("Could not save customer");
-                alert.setContentText(e.getMessage());
-                alert.showAndWait();
+                customerService.resendOtp(customer.getNic());
+            } catch (SmsSendingException e1) {
+                e1.printStackTrace();
             }
-        });
+        }
+
+        // Still allow OTP verification dialog (optional)
+        showOtpVerificationDialog(customer);
+        loadCustomers();
+    } catch (Exception e) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Error");
+        alert.setHeaderText("Could not save customer");
+        alert.setContentText(e.getMessage());
+        alert.showAndWait();
+    }
+});
+
     }
 
     private void showOtpVerificationDialog(Customer customer) {
@@ -390,4 +432,58 @@ public class CustomersController {
             }
         }
     }
+
+    private void handleEditCustomer(Customer customer) {
+
+    Dialog<Customer> dialog = new Dialog<>();
+    dialog.setTitle("Edit Customer");
+    dialog.setHeaderText("Update Customer Details");
+
+    ButtonType saveButton = new ButtonType("Update", ButtonBar.ButtonData.OK_DONE);
+    dialog.getDialogPane().getButtonTypes().addAll(saveButton, ButtonType.CANCEL);
+
+    GridPane grid = new GridPane();
+    grid.setHgap(10);
+    grid.setVgap(10);
+    grid.setPadding(new javafx.geometry.Insets(20));
+
+    TextField name = new TextField(customer.getName());
+    TextField nic = new TextField(customer.getNic());
+    TextField phone = new TextField(customer.getPhone());
+    TextField email = new TextField(customer.getEmail());
+    TextField address = new TextField(customer.getAddress());
+
+    grid.add(new Label("Name:"), 0, 0);
+    grid.add(name, 1, 0);
+    grid.add(new Label("NIC:"), 0, 1);
+    grid.add(nic, 1, 1);
+    grid.add(new Label("Phone:"), 0, 2);
+    grid.add(phone, 1, 2);
+    grid.add(new Label("Email:"), 0, 3);
+    grid.add(email, 1, 3);
+    grid.add(new Label("Address:"), 0, 4);
+    grid.add(address, 1, 4);
+
+    dialog.getDialogPane().setContent(grid);
+
+    dialog.setResultConverter(button -> {
+        if (button == saveButton) {
+            customer.setName(name.getText());
+            customer.setNic(nic.getText());
+            customer.setPhone(phone.getText());
+            customer.setEmail(email.getText());
+            customer.setAddress(address.getText());
+            return customer;
+        }
+        return null;
+    });
+
+    Optional<Customer> result = dialog.showAndWait();
+
+    result.ifPresent(updated -> {
+        customerService.updateCustomer(updated);
+        loadCustomers();
+    });
+}
+
 }
