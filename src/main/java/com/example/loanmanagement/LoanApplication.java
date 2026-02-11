@@ -1,17 +1,20 @@
 package com.example.loanmanagement;
 
 import javafx.application.Application;
-
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
 import javafx.stage.Stage;
-import com.example.loanmanagement.util.SceneManager;
 
 import java.io.IOException;
 
 public class LoanApplication extends Application {
     @Override
     public void start(Stage stage) throws IOException {
-        SceneManager.setStage(stage);
-        SceneManager.switchScene("login.fxml");
+        FXMLLoader fxmlLoader = new FXMLLoader(LoanApplication.class.getResource("dashboard.fxml"));
+        Scene scene = new Scene(fxmlLoader.load(), 800, 600);
+        stage.setTitle("Loan Management System");
+        stage.setScene(scene);
+        stage.show();
     }
 
     public static void main(String[] args) {
