@@ -34,4 +34,19 @@ public class LoanDAO extends GenericDAOImpl<Loan, Long> {
             return query.uniqueResult();
         }
     }
+
+    public List<Loan> findByStatus(Loan.LoanStatus status) {
+
+    try (org.hibernate.Session session =
+                 com.example.loanmanagement.util.HibernateUtil
+                         .getSessionFactory()
+                         .openSession()) {
+
+        return session.createQuery(
+                "FROM Loan WHERE status = :status", Loan.class)
+                .setParameter("status", status)
+                .getResultList();
+    }
+}
+
 }
