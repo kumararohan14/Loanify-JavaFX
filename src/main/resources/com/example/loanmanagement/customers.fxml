@@ -9,7 +9,8 @@
 <ScrollPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="com.example.loanmanagement.controller.CustomersController"
-            fitToWidth="true" style="-fx-background-color: transparent;">
+            fitToWidth="true" style="-fx-background-color: transparent;"
+            style="-fx-background-color: transparent; -fx-padding: 20 0 0 0;">
 
     <!-- Added small left padding (15px) -->
     <VBox spacing="20" style="-fx-padding: 0 20 20 15;">

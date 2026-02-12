@@ -14,7 +14,11 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 
-<ScrollPane fitToWidth="true" style="-fx-background-color: transparent;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.loanmanagement.controller.LoanDetailsController">
+<ScrollPane fitToWidth="true" 
+xmlns="http://javafx.com/javafx/21" 
+xmlns:fx="http://javafx.com/fxml/1" 
+fx:controller="com.example.loanmanagement.controller.LoanDetailsController"
+style="-fx-background-color: transparent; -fx-padding: 20 0 0 20;">
     <content>
         <VBox spacing="20.0" style="-fx-padding: 0 20 20 0;">
 
