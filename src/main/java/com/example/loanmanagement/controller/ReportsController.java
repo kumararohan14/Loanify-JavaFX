@@ -6,12 +6,18 @@ import com.example.loanmanagement.model.Payment;
 import com.example.loanmanagement.service.CustomerService;
 import com.example.loanmanagement.service.LoanService;
 import com.example.loanmanagement.service.PaymentService;
+import com.itextpdf.text.*;
+import com.itextpdf.text.pdf.PdfWriter;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.stage.FileChooser;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.time.LocalDate;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,10 +31,16 @@ public class ReportsController {
     private DatePicker endDatePicker;
     @FXML
     private TextArea reportTextArea;
+    @FXML
+    private Button btnExportPdf;
+    @FXML
+    private Button btnExportExcel;
 
     private final LoanService loanService = new LoanService();
     private final CustomerService customerService = new CustomerService();
     private final PaymentService paymentService = new PaymentService();
+
+    private String currentReportText = "";
 
     @FXML
     public void initialize() {
@@ -59,15 +71,9 @@ public class ReportsController {
         }
 
         StringBuilder report = new StringBuilder();
-        report.append("========================================\n");
-        report.append("   LOAN MANAGEMENT SYSTEM - REPORT   \n");
-        report.append("========================================\n");
+        report.append("LOAN MANAGEMENT SYSTEM REPORT\n");
         report.append("Report Type: ").append(type).append("\n");
-        report.append("Generated On: ").append(LocalDate.now()).append("\n");
-        if (start != null && end != null) {
-            report.append("Period: ").append(start).append(" to ").append(end).append("\n");
-        }
-        report.append("========================================\n\n");
+        report.append("Generated On: ").append(LocalDate.now()).append("\n\n");
 
         switch (type) {
             case "Loan Portfolio Summary":
@@ -84,52 +90,105 @@ public class ReportsController {
                 break;
         }
 
-        reportTextArea.setText(report.toString());
+        currentReportText = report.toString();
+        reportTextArea.setText(currentReportText);
+
+        btnExportPdf.setDisable(false);
+        btnExportExcel.setDisable(false);
     }
+
+    // ================= PDF EXPORT =================
+
+    @FXML
+    private void handleExportPdf() {
+        if (currentReportText.isEmpty()) return;
+
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Save Report as PDF");
+        fileChooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("PDF Files", "*.pdf"));
+
+        File file = fileChooser.showSaveDialog(reportTextArea.getScene().getWindow());
+        if (file == null) return;
+
+        try {
+            Document document = new Document();
+            PdfWriter.getInstance(document, new FileOutputStream(file));
+            document.open();
+            document.add(new Paragraph(currentReportText));
+            document.close();
+            showAlert("PDF Exported Successfully!");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // ================= EXCEL EXPORT =================
+
+    @FXML
+    private void handleExportExcel() {
+        if (currentReportText.isEmpty()) return;
+
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Save Report as Excel");
+        fileChooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("Excel Files", "*.xlsx"));
+
+        File file = fileChooser.showSaveDialog(reportTextArea.getScene().getWindow());
+        if (file == null) return;
+
+        try (Workbook workbook = new XSSFWorkbook()) {
+
+            Sheet sheet = workbook.createSheet("Report");
+
+            String[] lines = currentReportText.split("\n");
+
+            for (int i = 0; i < lines.length; i++) {
+                Row row = sheet.createRow(i);
+                row.createCell(0).setCellValue(lines[i]);
+            }
+
+            FileOutputStream fos = new FileOutputStream(file);
+            workbook.write(fos);
+            fos.close();
+
+            showAlert("Excel Exported Successfully!");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // ================= REPORT METHODS =================
 
     private void generateLoanSummary(StringBuilder report) {
         List<Loan> loans = loanService.getAllLoans();
         double totalDisbursed = loans.stream().mapToDouble(Loan::getAmount).sum();
         double totalOutstanding = loans.stream().mapToDouble(Loan::getOutstandingAmount).sum();
-        long activeCount = loans.stream().filter(l -> l.getStatus() == Loan.LoanStatus.ACTIVE).count();
-        long closedCount = loans.stream().filter(l -> l.getStatus() == Loan.LoanStatus.CLOSED).count();
 
-        report.append(String.format("Total Loans Disbursed: %d\n", loans.size()));
-        report.append(String.format("Total Amount Disbursed: Rs. %.2f\n", totalDisbursed));
-        report.append(String.format("Total Outstanding Amount: Rs. %.2f\n", totalOutstanding));
-        report.append("----------------------------------------\n");
-        report.append(String.format("Active Loans: %d\n", activeCount));
-        report.append(String.format("Closed Loans: %d\n", closedCount));
-        report.append(String.format("Overdue Loans: %d\n",
-                loans.stream().filter(l -> l.getStatus() == Loan.LoanStatus.OVERDUE).count()));
-        report.append(String.format("Pending Applications: %d\n",
-                loans.stream().filter(l -> l.getStatus() == Loan.LoanStatus.PENDING).count()));
+        report.append("Total Loans: ").append(loans.size()).append("\n");
+        report.append("Total Disbursed: Rs. ").append(totalDisbursed).append("\n");
+        report.append("Total Outstanding: Rs. ").append(totalOutstanding).append("\n");
     }
 
     private void generatePaymentHistory(StringBuilder report, LocalDate start, LocalDate end) {
         List<Payment> payments = paymentService.getAllPayments();
 
-        // Filter by date if provided
         if (start != null && end != null) {
             payments = payments.stream()
                     .filter(p -> !p.getDate().isBefore(start) && !p.getDate().isAfter(end))
                     .collect(Collectors.toList());
         }
 
-        report.append(String.format("%-15s %-20s %-15s %-15s\n", "Date", "Customer", "Amount", "Method"));
-        report.append("----------------------------------------------------------------\n");
-
         double total = 0;
         for (Payment p : payments) {
-            report.append(String.format("%-15s %-20s Rs. %-11.2f %-15s\n",
-                    p.getDate(),
-                    p.getCustomerName(),
-                    p.getAmount(),
-                    p.getMethod()));
+            report.append(p.getDate()).append(" - ")
+                    .append(p.getCustomerName()).append(" - Rs. ")
+                    .append(p.getAmount()).append("\n");
             total += p.getAmount();
         }
-        report.append("----------------------------------------------------------------\n");
-        report.append(String.format("Total Collections: Rs. %.2f\n", total));
+
+        report.append("\nTotal Collections: Rs. ").append(total);
     }
 
     private void generateOverdueReport(StringBuilder report) {
@@ -137,35 +196,19 @@ public class ReportsController {
                 .filter(l -> l.getStatus() == Loan.LoanStatus.OVERDUE)
                 .collect(Collectors.toList());
 
-        if (overdueLoans.isEmpty()) {
-            report.append("No overdue loans found.\n");
-            return;
-        }
-
-        report.append(String.format("%-10s %-20s %-15s %-15s\n", "Loan ID", "Customer", "Outstanding", "Start Date"));
-        report.append("----------------------------------------------------------------\n");
-
         for (Loan l : overdueLoans) {
-            report.append(String.format("%-10s %-20s Rs. %-11.2f %-15s\n",
-                    l.getLoanId(),
-                    l.getCustomer() != null ? l.getCustomer().getName() : "Unknown",
-                    l.getOutstandingAmount(),
-                    l.getStartDate()));
+            report.append(l.getLoanId()).append(" - ")
+                    .append(l.getCustomer().getName()).append(" - Rs. ")
+                    .append(l.getOutstandingAmount()).append("\n");
         }
     }
 
     private void generateCustomerList(StringBuilder report) {
         List<Customer> customers = customerService.getAllCustomers();
-
-        report.append(String.format("%-20s %-15s %-15s %-30s\n", "Name", "NIC", "Phone", "Email"));
-        report.append("--------------------------------------------------------------------------------\n");
-
         for (Customer c : customers) {
-            report.append(String.format("%-20s %-15s %-15s %-30s\n",
-                    c.getName(),
-                    c.getNic(),
-                    c.getPhone(),
-                    c.getEmail()));
+            report.append(c.getName()).append(" - ")
+                    .append(c.getPhone()).append(" - ")
+                    .append(c.getEmail()).append("\n");
         }
     }
 
