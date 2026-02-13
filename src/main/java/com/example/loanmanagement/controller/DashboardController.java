@@ -4,7 +4,6 @@ import com.example.loanmanagement.util.SceneManager;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.StackPane;
 import java.io.IOException;
 
 public class DashboardController {

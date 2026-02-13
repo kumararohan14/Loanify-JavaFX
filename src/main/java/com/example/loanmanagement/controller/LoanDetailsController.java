@@ -47,6 +47,8 @@ public class LoanDetailsController {
     // New Buttons for status changes
     @FXML private Button btnApprove;   // PENDING → ACTIVE
     @FXML private Button btnClose;     // ACTIVE → CLOSED
+    @FXML private Button btnBackToLoans;
+
 
     private Loan loan;
     private final LoanService loanService = new LoanService();
@@ -58,6 +60,7 @@ public class LoanDetailsController {
 
         // Hide approve button by default
         if (btnApprove != null) btnApprove.setVisible(false);
+        if (btnBackToLoans != null) btnBackToLoans.setVisible(true);
     }
 
     // ================================

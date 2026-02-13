@@ -24,7 +24,10 @@ style="-fx-background-color: transparent; -fx-padding: 20 0 0 20;">
 
             <!-- Header -->
             <HBox alignment="CENTER_LEFT" spacing="10.0">
-                <Button onAction="#handleBack" styleClass="button-secondary" text="← Back to Loans" />
+                <Button fx:id="btnBackToLoans" 
+                onAction="#handleBack" 
+                styleClass="button-secondary" 
+                text="← Back to Loans" />
                 <Region HBox.hgrow="ALWAYS" />
             </HBox>
 
