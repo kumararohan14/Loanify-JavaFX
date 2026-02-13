@@ -271,10 +271,8 @@ public class LoanDetailsController {
 
     @FXML
     private void handleBack() {
-        try{
-            SceneManager.loadView("loans.fxml");
-        }catch(Exception e){
-            showMessage(e.getMessage(), Alert.AlertType.ERROR);
+        if (DashboardController.getInstance() != null) {
+            DashboardController.getInstance().loadView("loans.fxml");
         }
     }
 
