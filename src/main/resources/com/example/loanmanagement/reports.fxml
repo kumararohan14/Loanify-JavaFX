@@ -65,7 +65,7 @@
                         onAction="#handleExportExcel"
                         styleClass="button-secondary"
                         disable="true"/>
-                <Button fx:id="btnExportEmail"
+                <!-- <Button fx:id="btnExportEmail"
                         text="Send via Email"
                         onAction="#handleExportEmail"
                         styleClass="button-secondary"
@@ -74,7 +74,7 @@
                         text="Print"
                         onAction="#handlePrint"
                         styleClass="button-secondary"
-                        disable="true"/>
+                        disable="true"/> -->
             </HBox>
 
             <!-- Report Text Area -->
