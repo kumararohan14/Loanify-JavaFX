@@ -6,9 +6,11 @@ import com.example.loanmanagement.service.CustomerService;
 import com.example.loanmanagement.service.LoanService;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.util.Callback;
+
+import java.time.LocalDate;
 
 public class LoanApplicationController {
+
     @FXML
     private ComboBox<Customer> customerCombo;
     @FXML
@@ -18,7 +20,7 @@ public class LoanApplicationController {
     @FXML
     private TextField interestField;
     @FXML
-    private ComboBox<Integer> durationCombo; // Changed to ComboBox
+    private ComboBox<Integer> durationCombo;
     @FXML
     private DatePicker startDatePicker;
     @FXML
@@ -31,43 +33,53 @@ public class LoanApplicationController {
 
     @FXML
     public void initialize() {
-        // Load customers
-        customerCombo.setItems(javafx.collections.FXCollections.observableArrayList(customerService.getAllCustomers()));
 
-        // Define cell factory to show customer names properly
-        javafx.util.Callback<ListView<com.example.loanmanagement.model.Customer>, ListCell<com.example.loanmanagement.model.Customer>> cellFactory = lv -> new ListCell<>() {
+        customerCombo.setItems(
+                javafx.collections.FXCollections.observableArrayList(customerService.getAllCustomers()));
+
+        javafx.util.Callback<ListView<Customer>, ListCell<Customer>> cellFactory = lv -> new ListCell<>() {
             @Override
-            protected void updateItem(com.example.loanmanagement.model.Customer item, boolean empty) {
+            protected void updateItem(Customer item, boolean empty) {
                 super.updateItem(item, empty);
-                setText(empty ? "" : item.getName() + " (ID: " + item.getCustomerId() + ")");
+                setText(empty || item == null ? ""
+                        : item.getName() + " (ID: " + item.getCustomerId() + ")");
             }
         };
         customerCombo.setButtonCell(cellFactory.call(null));
         customerCombo.setCellFactory(cellFactory);
 
-        // Load Loan Types
-        loanTypeCombo.setItems(javafx.collections.FXCollections
-                .observableArrayList(com.example.loanmanagement.model.Loan.LoanType.values()));
+        loanTypeCombo.setItems(
+                javafx.collections.FXCollections.observableArrayList(Loan.LoanType.values()));
 
-        // Load Duration Options
         durationCombo.setItems(
-                javafx.collections.FXCollections.observableArrayList(6, 12, 18, 24, 36, 48, 60, 120, 180, 240));
+                javafx.collections.FXCollections.observableArrayList(
+                        6, 12, 18, 24, 36, 48, 60, 120, 180, 240));
 
-        // Add listeners for dynamic EMI calculation
-        javafx.beans.value.ChangeListener<Object> listener = (obs, oldVal, newVal) -> calculateEmiPreview();
+        javafx.beans.value.ChangeListener<Object> listener =
+                (obs, oldVal, newVal) -> calculateEmiPreview();
+
         amountField.textProperty().addListener(listener);
         interestField.textProperty().addListener(listener);
         durationCombo.valueProperty().addListener(listener);
 
-        // Auto-fill interest rate based on loan type
         loanTypeCombo.valueProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null) {
                 interestField.setText(String.valueOf(newVal.getInterestRate()));
             }
         });
 
-        // Set default start date
-        startDatePicker.setValue(java.time.LocalDate.now());
+        startDatePicker.setValue(LocalDate.now());
+
+        // ❗ Disable past dates in DatePicker UI
+        startDatePicker.setDayCellFactory(dp -> new DateCell() {
+            @Override
+            public void updateItem(LocalDate date, boolean empty) {
+                super.updateItem(date, empty);
+                if (date.isBefore(LocalDate.now())) {
+                    setDisable(true);
+                }
+            }
+        });
     }
 
     private void calculateEmiPreview() {
@@ -77,12 +89,13 @@ public class LoanApplicationController {
             Integer duration = durationCombo.getValue();
 
             if (principal > 0 && rate > 0 && duration != null && duration > 0) {
-                double emi = (principal * rate * Math.pow(1 + rate, duration)) / (Math.pow(1 + rate, duration) - 1);
+                double emi = (principal * rate * Math.pow(1 + rate, duration))
+                        / (Math.pow(1 + rate, duration) - 1);
                 emiPreviewLabel.setText(String.format("Rs. %,.2f", emi));
             } else {
                 emiPreviewLabel.setText("0.00");
             }
-        } catch (NumberFormatException | NullPointerException e) {
+        } catch (Exception e) {
             emiPreviewLabel.setText("0.00");
         }
     }
@@ -90,34 +103,73 @@ public class LoanApplicationController {
     @FXML
     private void handleSubmit() {
         try {
-            if (customerCombo.getValue() == null || loanTypeCombo.getValue() == null
-                    || durationCombo.getValue() == null) {
+
+            if (customerCombo.getValue() == null
+                    || loanTypeCombo.getValue() == null
+                    || durationCombo.getValue() == null
+                    || amountField.getText().isEmpty()
+                    || interestField.getText().isEmpty()
+                    || startDatePicker.getValue() == null) {
+
                 showError("Please fill all required fields.");
                 return;
             }
 
+            Customer selectedCustomer = customerCombo.getValue();
+
+            // ✅ Only ACTIVE customers allowed
+            if (!"ACTIVE".equalsIgnoreCase(selectedCustomer.getStatus().toString())) {
+                showError("Only ACTIVE customers can apply for loans.");
+                return;
+            }
+
             double amount = Double.parseDouble(amountField.getText());
+
+            // ✅ Amount validation
+            if (amount <= 0) {
+                showError("Loan amount must be greater than 0.");
+                return;
+            }
+
+            if (amount < 10000 || amount > 10000000) {
+                showError("Loan amount must be between Rs 10,000 and Rs 10,000,000.");
+                return;
+            }
+
             double interest = Double.parseDouble(interestField.getText());
             int duration = durationCombo.getValue();
+            LocalDate startDate = startDatePicker.getValue();
 
-            com.example.loanmanagement.model.Loan loan = new com.example.loanmanagement.model.Loan();
-            loan.setCustomer(customerCombo.getValue());
+            // ✅ Start date validation
+            if (startDate.isBefore(LocalDate.now())) {
+                showError("Start date cannot be a past date.");
+                return;
+            }
+
+            Loan loan = new Loan();
+            loan.setCustomer(selectedCustomer);
             loan.setType(loanTypeCombo.getValue());
             loan.setAmount(amount);
             loan.setInterestRate(interest);
             loan.setDurationMonths(duration);
-            loan.setStartDate(startDatePicker.getValue());
-            loan.setEndDate(startDatePicker.getValue().plusMonths(duration));
+            loan.setStartDate(startDate);
+            loan.setEndDate(startDate.plusMonths(duration));
 
-            // Service handles EMI calc and saving
             loanService.applyForLoan(loan);
+
+            Alert successAlert = new Alert(Alert.AlertType.INFORMATION);
+            successAlert.setTitle("Success");
+            successAlert.setHeaderText("Loan Application Submitted");
+            successAlert.setContentText("The loan application was submitted successfully!");
+            successAlert.showAndWait();
 
             statusLabel.setText("Loan Application Submitted Successfully!");
             statusLabel.setStyle("-fx-text-fill: green;");
+
             handleClear();
 
         } catch (NumberFormatException e) {
-            showError("Invalid numeric input. Please check amount.");
+            showError("Invalid numeric input. Please check amount and interest.");
         } catch (Exception e) {
             showError("Error submitting loan: " + e.getMessage());
             e.printStackTrace();
@@ -131,13 +183,20 @@ public class LoanApplicationController {
         amountField.clear();
         interestField.clear();
         durationCombo.getSelectionModel().clearSelection();
-        startDatePicker.setValue(java.time.LocalDate.now());
+        startDatePicker.setValue(LocalDate.now());
         emiPreviewLabel.setText("0.00");
         statusLabel.setText("");
     }
 
     private void showError(String message) {
+
         statusLabel.setText(message);
         statusLabel.setStyle("-fx-text-fill: red;");
+
+        Alert errorAlert = new Alert(Alert.AlertType.ERROR);
+        errorAlert.setTitle("Error");
+        errorAlert.setHeaderText("Submission Failed");
+        errorAlert.setContentText(message);
+        errorAlert.showAndWait();
     }
 }

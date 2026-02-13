@@ -2,9 +2,12 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="com.example.loanmanagement.controller.ReportsController"
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.example.loanmanagement.controller.ReportsController"
             stylesheets="@../application.css">
-    
+
+    <!-- Top Header -->
     <top>
         <VBox spacing="10" style="-fx-padding: 20;">
             <Label text="Reports &amp; Analytics" styleClass="header-label"/>
@@ -12,17 +15,23 @@
         </VBox>
     </top>
 
+    <!-- Left Report Configuration Panel -->
     <left>
-        <VBox spacing="15" style="-fx-padding: 20; -fx-background-color: -color-bg-subtle; -fx-border-color: -color-border; -fx-border-width: 0 1 0 0;" prefWidth="300">
+        <VBox spacing="15"
+              style="-fx-padding: 20; -fx-background-color: -color-bg-subtle; -fx-border-color: -color-border; -fx-border-width: 0 1 0 0;"
+              prefWidth="300">
+            
             <Label text="Report Configuration" style="-fx-font-weight: bold;"/>
             
+            <!-- Report Type ComboBox -->
             <VBox spacing="5">
                 <Label text="Report Type"/>
                 <ComboBox fx:id="reportTypeCombo" maxWidth="Infinity" promptText="Select Report Type"/>
             </VBox>
-            
+
             <Separator/>
-            
+
+            <!-- Date Range Pickers -->
             <VBox spacing="5">
                 <Label text="Date Range"/>
                 <DatePicker fx:id="startDatePicker" maxWidth="Infinity" promptText="Start Date"/>
@@ -30,22 +39,50 @@
             </VBox>
 
             <Region VBox.vgrow="ALWAYS"/>
-            
-            <Button text="Generate Report" onAction="#handleGenerateReport" styleClass="button-primary" maxWidth="Infinity"/>
+
+            <!-- Generate Report Button -->
+            <Button text="Generate Report"
+                    onAction="#handleGenerateReport"
+                    styleClass="button-primary"
+                    maxWidth="Infinity"/>
         </VBox>
     </left>
 
+    <!-- Center Report Preview & Export -->
     <center>
-        <VBox spacing="20" style="-fx-padding: 20;">
+        <VBox spacing="10" style="-fx-padding: 20;">
+            <!-- Report Preview Header + Buttons aligned to right -->
             <HBox alignment="CENTER_LEFT" spacing="10">
                 <Label text="Report Preview" style="-fx-font-weight: bold;"/>
                 <Region HBox.hgrow="ALWAYS"/>
-                <Button text="Export via Email" styleClass="button-secondary" disable="true"/>
-                <Button text="Print" styleClass="button-secondary" disable="true"/>
+                <Button fx:id="btnExportPdf"
+                        text="Export PDF"
+                        onAction="#handleExportPdf"
+                        styleClass="button-secondary"
+                        disable="true"/>
+                <Button fx:id="btnExportExcel"
+                        text="Export Excel"
+                        onAction="#handleExportExcel"
+                        styleClass="button-secondary"
+                        disable="true"/>
+                <!-- <Button fx:id="btnExportEmail"
+                        text="Send via Email"
+                        onAction="#handleExportEmail"
+                        styleClass="button-secondary"
+                        disable="true"/>
+                <Button fx:id="btnPrint"
+                        text="Print"
+                        onAction="#handlePrint"
+                        styleClass="button-secondary"
+                        disable="true"/> -->
             </HBox>
-            
-            <TextArea fx:id="reportTextArea" VBox.vgrow="ALWAYS" editable="false" style="-fx-font-family: 'Consolas', monospace;"/>
+
+            <!-- Report Text Area -->
+            <TextArea fx:id="reportTextArea"
+                      VBox.vgrow="ALWAYS"
+                      editable="false"
+                      style="-fx-font-family: 'Consolas', monospace;"/>
         </VBox>
     </center>
-    
+
 </BorderPane>

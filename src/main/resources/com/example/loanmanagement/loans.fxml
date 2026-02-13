@@ -7,7 +7,8 @@
             fx:controller="com.example.loanmanagement.controller.LoansController"
             fitToWidth="true" style="-fx-background-color: transparent;">
 
-    <VBox spacing="20" style="-fx-padding: 0 20 20 0;">
+    <!-- Added small left padding (15px) -->
+    <VBox spacing="20" style="-fx-padding: 0 20 20 15;">
         
         <!-- Header Row -->
         <HBox alignment="CENTER_LEFT" spacing="20">
@@ -16,19 +17,34 @@
                 <Label text="View and manage all loans" styleClass="sub-header-label"/>
             </VBox>
             <Region HBox.hgrow="ALWAYS"/>
-             <HBox spacing="10" alignment="CENTER_LEFT" style="-fx-background-color: white; -fx-background-radius: 8; -fx-padding: 5 10; -fx-border-color: -color-border; -fx-border-radius: 8;">
+            
+             <HBox spacing="10" alignment="CENTER_LEFT"
+                   style="-fx-background-color: white; -fx-background-radius: 8; -fx-padding: 5 10; -fx-border-color: -color-border; -fx-border-radius: 8;">
                  <Label text="🔍" style="-fx-text-fill: -color-text-muted;"/>
-                 <TextField promptText="Search..." style="-fx-background-color: transparent; -fx-border-color: transparent; -fx-padding: 5;" prefWidth="200"/>
+                 <TextField promptText="Search..."
+                            style="-fx-background-color: transparent; -fx-border-color: transparent; -fx-padding: 5;"
+                            prefWidth="200"/>
              </HBox>
+             
              <Button text="🔔" styleClass="button-secondary"/>
-             <Button text="User" style="-fx-background-color: #1e2a3a; -fx-text-fill: white; -fx-background-radius: 20; -fx-min-width: 32; -fx-min-height: 32;"/>
+             
+             <Button text="User"
+                     style="-fx-background-color: #1e2a3a; -fx-text-fill: white; -fx-background-radius: 20; -fx-min-width: 32; -fx-min-height: 32;"/>
         </HBox>
 
         <!-- Search & Filter Row -->
          <HBox spacing="15" alignment="CENTER_LEFT">
-             <HBox HBox.hgrow="ALWAYS" spacing="10" style="-fx-background-color: white; -fx-background-radius: 8; -fx-padding: 8; -fx-border-color: -color-border; -fx-border-radius: 8;">
+             
+             <HBox HBox.hgrow="ALWAYS" spacing="10"
+                   style="-fx-background-color: white; -fx-background-radius: 8; -fx-padding: 8; -fx-border-color: -color-border; -fx-border-radius: 8;">
+                 
                  <Label text="🔍" style="-fx-text-fill: -color-text-muted; -fx-padding: 5;"/>
-                 <TextField fx:id="searchField" promptText="Search by loan ID or customer..." style="-fx-background-color: transparent; -fx-border-color: transparent;" HBox.hgrow="ALWAYS"/>
+                 
+                 <TextField fx:id="searchField"
+                            promptText="Search by loan ID or customer..."
+                            style="-fx-background-color: transparent; -fx-border-color: transparent;"
+                            HBox.hgrow="ALWAYS"/>
+                 
                  <Button text="Filter" styleClass="button-secondary"/>
              </HBox>
              
@@ -46,29 +62,39 @@
              </HBox>
         </HBox>
 
-
         <!-- Stats Cards Row -->
         <HBox spacing="20">
             <VBox styleClass="card" HBox.hgrow="ALWAYS">
                 <Label text="Total Loans" styleClass="sub-header-label"/>
-                <Label fx:id="totalLoansLabel" text="0" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
+                <Label fx:id="totalLoansLabel" text="0"
+                       style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
             </VBox>
+            
             <VBox styleClass="card" HBox.hgrow="ALWAYS">
                 <Label text="Active" styleClass="sub-header-label"/>
-                <Label fx:id="activeLoansLabel" text="0" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: -color-success;"/>
+                <Label fx:id="activeLoansLabel" text="0"
+                       style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: -color-success;"/>
             </VBox>
+            
             <VBox styleClass="card" HBox.hgrow="ALWAYS">
                 <Label text="Overdue" styleClass="sub-header-label"/>
-                <Label fx:id="overdueLoansLabel" text="0" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: -color-destructive;"/>
+                <Label fx:id="overdueLoansLabel" text="0"
+                       style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: -color-destructive;"/>
             </VBox>
-             <VBox styleClass="card" HBox.hgrow="ALWAYS">
+             
+            <VBox styleClass="card" HBox.hgrow="ALWAYS">
                 <Label text="Total Value" styleClass="sub-header-label"/>
-                <Label fx:id="totalValueLabel" text="Rs. 0" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
+                <Label fx:id="totalValueLabel" text="Rs. 0"
+                       style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
             </VBox>
         </HBox>
 
-        <!-- Use TilePane for Grid Layout of Cards -->
-        <TilePane fx:id="loanContainer" hgap="20" vgap="20" prefColumns="3" style="-fx-background-color: transparent;">
+        <!-- Loan Cards Grid -->
+        <TilePane fx:id="loanContainer"
+                  hgap="20"
+                  vgap="20"
+                  prefColumns="3"
+                  style="-fx-background-color: transparent;">
              <!-- Cards will be added here dynamically -->
         </TilePane>
 

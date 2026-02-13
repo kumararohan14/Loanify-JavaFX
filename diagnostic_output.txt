@@ -1,5 +1,6 @@
-Starting Diagnostic...
-Attempting to build SessionFactory...
-SessionFactory built successfully.
-Session opened successfully.
-Check: 1
+Starting Update Customer Diagnostic...
+Created customer: Original Name
+Computed update.
+Retrieved name: Updated Name
+Retrieved address: New Address
+PASS: Customer updated successfully.

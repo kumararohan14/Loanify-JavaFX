@@ -115,4 +115,69 @@ public class LoanService {
     // Better implementation of getLoan that doesn't close session immediately?
     // Or we rely on `OpenSessionInView` pattern or Eager fetching.
     // Given the architecture, maybe we should add `getLoanWithSchedule` in DAO.
+
+    
+    // ================================
+// UPDATE EXISTING LOAN
+// ================================
+public void updateLoan(Loan loan) {
+    loanDAO.update(loan);
+}
+
+// ================================
+// APPROVE LOAN (PENDING → ACTIVE)
+// ================================
+public void approveLoan(Loan loan) {
+
+    if (loan.getStatus() != Loan.LoanStatus.PENDING) {
+        throw new IllegalStateException("Only PENDING loans can be approved.");
+    }
+
+    loan.setStatus(Loan.LoanStatus.ACTIVE);
+    loanDAO.update(loan);
+}
+
+// ================================
+// CLOSE LOAN (ACTIVE → CLOSED)
+// ================================
+public void closeLoan(Loan loan) {
+
+    if (loan.getStatus() != Loan.LoanStatus.ACTIVE) {
+        throw new IllegalStateException("Only ACTIVE loans can be closed.");
+    }
+
+    if (loan.getOutstandingAmount() > 0) {
+        throw new IllegalStateException("Loan cannot be closed. Outstanding amount exists.");
+    }
+
+    loan.setStatus(Loan.LoanStatus.CLOSED);
+    loanDAO.update(loan);
+}
+
+// ================================
+// AUTO CHECK OVERDUE LOANS
+// ================================
+public void checkAndUpdateOverdueLoans() {
+
+    List<Loan> activeLoans = loanDAO.findByStatus(Loan.LoanStatus.ACTIVE);
+
+    for (Loan loan : activeLoans) {
+
+        // If end date passed and still has outstanding amount
+        if (loan.getEndDate().isBefore(LocalDate.now())
+                && loan.getOutstandingAmount() > 0) {
+
+            loan.setStatus(Loan.LoanStatus.OVERDUE);
+            loanDAO.update(loan);
+        }
+    }
+}
+
+// ================================
+// GET LOANS BY STATUS
+// ================================
+public List<Loan> getLoansByStatus(Loan.LoanStatus status) {
+    return loanDAO.findByStatus(status);
+}
+
 }

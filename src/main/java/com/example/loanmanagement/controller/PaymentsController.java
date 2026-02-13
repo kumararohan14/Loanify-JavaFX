@@ -12,6 +12,7 @@ import javafx.util.Callback;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class PaymentsController {
@@ -30,8 +31,6 @@ public class PaymentsController {
     private ComboBox<Payment.PaymentMethod> methodCombo;
     @FXML
     private DatePicker paymentDatePicker;
-    @FXML
-    private Label statusLabel;
 
     private final CustomerService customerService = new CustomerService();
     private final LoanService loanService = new LoanService();
@@ -92,13 +91,8 @@ public class PaymentsController {
 
     private void loadLoansForCustomer(Customer customer) {
         List<Loan> loans = loanService.getLoansByCustomer(customer.getId());
-        // Filter active loans only? maybe
         List<Loan> activeLoans = loans.stream()
-                .filter(l -> l.getStatus() == Loan.LoanStatus.ACTIVE || l.getStatus() == Loan.LoanStatus.PENDING) // Allow
-                                                                                                                  // pending
-                                                                                                                  // just
-                                                                                                                  // in
-                                                                                                                  // case
+                .filter(l -> l.getStatus() == Loan.LoanStatus.ACTIVE || l.getStatus() == Loan.LoanStatus.PENDING)
                 .collect(Collectors.toList());
         loanCombo.setItems(javafx.collections.FXCollections.observableArrayList(activeLoans));
     }
@@ -106,53 +100,59 @@ public class PaymentsController {
     private void updateLoanDetails(Loan loan) {
         outstandingLabel.setText(String.format("%.2f", loan.getOutstandingAmount()));
         emiLabel.setText(String.format("%.2f", loan.getEmi()));
-        amountField.setText(String.format("%.2f", loan.getEmi())); // Auto-fill EMI amount
+        amountField.setText(String.format("%.2f", loan.getEmi()));
     }
 
     @FXML
     private void handleSavePayment() {
+        if (loanCombo.getValue() == null || customerCombo.getValue() == null
+                || amountField.getText().isEmpty() || methodCombo.getValue() == null) {
+            showAlert(Alert.AlertType.ERROR, "Error", "Please fill all required fields.");
+            return;
+        }
+
+        double amount;
         try {
-            if (loanCombo.getValue() == null || amountField.getText().isEmpty() || methodCombo.getValue() == null) {
-                showError("Please fill all required fields.");
-                return;
-            }
-
-            double amount = Double.parseDouble(amountField.getText());
+            amount = Double.parseDouble(amountField.getText());
             if (amount <= 0) {
-                showError("Amount must be positive.");
+                showAlert(Alert.AlertType.ERROR, "Error", "Amount must be positive.");
                 return;
             }
-
-            Payment payment = new Payment();
-            payment.setLoan(loanCombo.getValue());
-            payment.setCustomerName(customerCombo.getValue().getName()); // Simplified
-            payment.setAmount(amount);
-            payment.setMethod(methodCombo.getValue());
-            payment.setDate(paymentDatePicker.getValue());
-
-            paymentService.recordPayment(payment);
-
-            statusLabel.setText("Payment Recorded Successfully!");
-            statusLabel.setStyle("-fx-text-fill: green;");
-
-            // Refresh loan details to show updated outstanding
-            // Force reload logic or just manually update UI?
-            // Ideally reload from DB.
-            updateLoanDetails(loanCombo.getValue());
-            // Warning: updateLoanDetails uses the OLD object from combo unless we refresh
-            // it.
-            // But paymentService modifies the loan in DB. The object in memory might be
-            // stale.
-            // We should re-fetch.
-
-            handleClear();
-            // Actually, clearing resets everything.
-
         } catch (NumberFormatException e) {
-            showError("Invalid amount format.");
+            showAlert(Alert.AlertType.ERROR, "Error", "Invalid amount format.");
+            return;
+        }
+
+        Payment payment = new Payment();
+        payment.setLoan(loanCombo.getValue());
+        payment.setCustomerName(customerCombo.getValue().getName());
+        payment.setAmount(amount);
+        payment.setMethod(methodCombo.getValue());
+        payment.setDate(paymentDatePicker.getValue());
+
+        try {
+            boolean success = paymentService.recordPayment(payment);
+
+            if (success) {
+                showAlert(Alert.AlertType.INFORMATION, "Payment Successful", "Payment recorded successfully!");
+
+                // Refresh loan details after payment
+                Loan updatedLoan = loanService.getLoanById(loanCombo.getValue().getId());
+                loanCombo.getItems().remove(loanCombo.getValue());
+                loanCombo.getItems().add(updatedLoan);
+                loanCombo.setValue(updatedLoan);
+                updateLoanDetails(updatedLoan);
+
+                // Clear only amount and method
+                amountField.clear();
+                methodCombo.getSelectionModel().clearSelection();
+            } else {
+                showAlert(Alert.AlertType.ERROR, "Payment Failed", "Payment could not be recorded. Please try again.");
+            }
+
         } catch (Exception e) {
-            showError("Error recording payment: " + e.getMessage());
             e.printStackTrace();
+            showAlert(Alert.AlertType.ERROR, "Error", "Error recording payment: " + e.getMessage());
         }
     }
 
@@ -165,12 +165,15 @@ public class PaymentsController {
         methodCombo.getSelectionModel().clearSelection();
         outstandingLabel.setText("-");
         emiLabel.setText("-");
-        statusLabel.setText("");
         paymentDatePicker.setValue(LocalDate.now());
     }
 
-    private void showError(String message) {
-        statusLabel.setText(message);
-        statusLabel.setStyle("-fx-text-fill: red;");
+    // Helper method to show pop-up alerts
+    private void showAlert(Alert.AlertType type, String title, String message) {
+        Alert alert = new Alert(type);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 }

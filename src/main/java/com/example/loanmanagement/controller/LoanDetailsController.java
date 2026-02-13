@@ -1,93 +1,80 @@
 package com.example.loanmanagement.controller;
 
 import com.example.loanmanagement.model.Loan;
+import com.example.loanmanagement.service.LoanService;
 import com.example.loanmanagement.util.SceneManager;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.control.Label;
-import javafx.scene.control.ProgressBar;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.layout.HBox;
-import javafx.scene.control.TableCell;
+import javafx.scene.control.*;
 
 import java.time.LocalDate;
 
 public class LoanDetailsController {
 
-    @FXML
-    private Label subtitleLabel;
-    @FXML
-    private Label loanIdLabel;
-    @FXML
-    private Label statusBadge;
-    @FXML
-    private Label loanTypeLabel;
-    @FXML
-    private Label amountLabel;
-    @FXML
-    private Label outstandingLabelHeader;
-    @FXML
-    private Label customerNameLabel;
-    @FXML
-    private Label startDateLabel;
-    @FXML
-    private Label endDateLabel;
-    @FXML
-    private Label rateLabel;
+    @FXML private Label subtitleLabel;
+    @FXML private Label loanIdLabel;
+    @FXML private Label statusBadge;
+    @FXML private Label loanTypeLabel;
+    @FXML private Label amountLabel;
+    @FXML private Label outstandingLabelHeader;
+    @FXML private Label customerNameLabel;
+    @FXML private Label startDateLabel;
+    @FXML private Label endDateLabel;
+    @FXML private Label rateLabel;
 
-    @FXML
-    private Label progressTextLabel;
-    @FXML
-    private ProgressBar emiProgressBar;
-    @FXML
-    private Label progressPercentLabel;
-    @FXML
-    private Label remainingEmisLabel;
+    @FXML private Label progressTextLabel;
+    @FXML private ProgressBar emiProgressBar;
+    @FXML private Label progressPercentLabel;
+    @FXML private Label remainingEmisLabel;
 
-    @FXML
-    private Label paidEmisCountLabel;
-    @FXML
-    private Label monthlyEmiLabel;
-    @FXML
-    private Label totalDurationLabel;
+    @FXML private Label paidEmisCountLabel;
+    @FXML private Label monthlyEmiLabel;
+    @FXML private Label totalDurationLabel;
 
-    @FXML
-    private Label totalPaidLabel;
-    @FXML
-    private Label totalOutstandingLabel;
-    @FXML
-    private Label nextEmiDateLabel;
+    @FXML private Label totalPaidLabel;
+    @FXML private Label totalOutstandingLabel;
+    @FXML private Label nextEmiDateLabel;
 
-    @FXML
-    private TableView<EmiScheduleItem> scheduleTable;
-    @FXML
-    private TableColumn<EmiScheduleItem, Integer> colIndex;
-    @FXML
-    private TableColumn<EmiScheduleItem, String> colDate;
-    @FXML
-    private TableColumn<EmiScheduleItem, Double> colPrincipal;
-    @FXML
-    private TableColumn<EmiScheduleItem, Double> colInterest;
-    @FXML
-    private TableColumn<EmiScheduleItem, Double> colTotal;
-    @FXML
-    private TableColumn<EmiScheduleItem, String> colStatus;
+    @FXML private TableView<EmiScheduleItem> scheduleTable;
+    @FXML private TableColumn<EmiScheduleItem, Integer> colIndex;
+    @FXML private TableColumn<EmiScheduleItem, String> colDate;
+    @FXML private TableColumn<EmiScheduleItem, Double> colPrincipal;
+    @FXML private TableColumn<EmiScheduleItem, Double> colInterest;
+    @FXML private TableColumn<EmiScheduleItem, Double> colTotal;
+    @FXML private TableColumn<EmiScheduleItem, String> colStatus;
+
+    // New Buttons for status changes
+    @FXML private Button btnApprove;   // PENDING → ACTIVE
+    @FXML private Button btnClose;     // ACTIVE → CLOSED
+    @FXML private Button btnBackToLoans;
+
 
     private Loan loan;
+    private final LoanService loanService = new LoanService();
 
     @FXML
     public void initialize() {
         setupTable();
+        checkOverdueStatus();
+
+        // Hide approve button by default
+        if (btnApprove != null) btnApprove.setVisible(false);
+        if (btnBackToLoans != null) btnBackToLoans.setVisible(true);
     }
 
+    // ================================
+    // SET THE LOAN TO DISPLAY
+    // ================================
     public void setLoan(Loan loan) {
         this.loan = loan;
+        updateLoanStatusAutomatically(); // check CLOSED/OVERDUE
         populateData();
     }
 
+    // ================================
+    // TABLE SETUP
+    // ================================
     private void setupTable() {
         colIndex.setCellValueFactory(cellData -> cellData.getValue().indexProperty().asObject());
 
@@ -96,12 +83,8 @@ public class LoanDetailsController {
             @Override
             protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty)
-                    setText(null);
-                else {
-                    setText(item);
-                    setStyle("-fx-text-fill: #6b7280;");
-                }
+                setText(empty ? null : item);
+                if (!empty) setStyle("-fx-text-fill: #6b7280;");
             }
         });
 
@@ -125,10 +108,8 @@ public class LoanDetailsController {
                     Label badge = new Label(item);
                     badge.getStyleClass().add("status-badge");
                     if ("Paid".equalsIgnoreCase(item)) {
-                        badge.getStyleClass().add("status-active"); // Green like active
                         badge.setStyle("-fx-background-color: #d1fae5; -fx-text-fill: #10b981; -fx-font-size: 10px;");
                     } else {
-                        badge.getStyleClass().add("status-pending"); // Grey/Orange
                         badge.setStyle("-fx-background-color: #f3f4f6; -fx-text-fill: #6b7280; -fx-font-size: 10px;");
                     }
                     setGraphic(badge);
@@ -137,30 +118,20 @@ public class LoanDetailsController {
         });
     }
 
+    // ================================
+    // POPULATE ALL UI DATA
+    // ================================
     private void populateData() {
-        if (loan == null)
-            return;
+        if (loan == null) return;
 
-        // Header & Main Info
         subtitleLabel.setText("Viewing " + loan.getLoanId());
         loanIdLabel.setText(loan.getLoanId());
 
-        statusBadge.setText(loan.getStatus() != null ? loan.getStatus().name() : "PENDING");
-        statusBadge.getStyleClass().clear();
-        statusBadge.getStyleClass().add("status-badge");
-        String status = statusBadge.getText();
-        if (status.contains("ACTIVE"))
-            statusBadge.getStyleClass().add("status-active");
-        else if (status.contains("OVERDUE"))
-            statusBadge.getStyleClass().add("status-overdue");
-        else if (status.contains("CLOSED"))
-            statusBadge.getStyleClass().add("status-success");
+        updateStatusBadge();
 
         loanTypeLabel.setText(loan.getType() != null ? capitalize(loan.getType().name()) + " Loan" : "Loan");
         amountLabel.setText("Rs. " + formatMoney(loan.getAmount()));
 
-        // Calculate Outstanding (Total EMIs * EMI Amount - Paid Amount)
-        // Or simpler: Remaining EMIs * EMI Amount
         int paid = loan.getPaidEmis();
         int total = loan.getTotalEmis() > 0 ? loan.getTotalEmis() : loan.getDurationMonths();
         double emi = loan.getEmi();
@@ -173,7 +144,6 @@ public class LoanDetailsController {
         endDateLabel.setText(loan.getEndDate() != null ? loan.getEndDate().toString() : "-");
         rateLabel.setText(loan.getInterestRate() + "% p.a.");
 
-        // Progress
         progressTextLabel.setText(paid + " of " + total + " EMIs paid");
         double progress = total > 0 ? (double) paid / total : 0;
         emiProgressBar.setProgress(progress);
@@ -184,43 +154,114 @@ public class LoanDetailsController {
         monthlyEmiLabel.setText("Rs. " + formatMoney(emi));
         totalDurationLabel.setText(String.valueOf(total));
 
-        // Side Stats
-        double totalPaid = paid * emi;
-        totalPaidLabel.setText("Rs. " + formatMoney(totalPaid));
+        totalPaidLabel.setText("Rs. " + formatMoney(paid * emi));
 
         LocalDate nextDue = loan.getStartDate() != null ? loan.getStartDate().plusMonths(paid + 1) : LocalDate.now();
-        nextEmiDateLabel.setText(nextDue.toString()); // Could resize date input format
+        nextEmiDateLabel.setText(nextDue.toString());
 
-        // Generate Schedule
         generateSchedule(total, paid, emi, loan.getStartDate());
+
+        // Update buttons based on status
+        updateStatusButtons();
     }
 
+    // ================================
+    // UPDATE BADGE STYLE
+    // ================================
+    private void updateStatusBadge() {
+        statusBadge.setText(loan.getStatus() != null ? loan.getStatus().name() : "PENDING");
+        statusBadge.getStyleClass().clear();
+        statusBadge.getStyleClass().add("status-badge");
+
+        String status = statusBadge.getText();
+        switch (status) {
+            case "ACTIVE" -> statusBadge.getStyleClass().add("status-active");
+            case "OVERDUE" -> statusBadge.getStyleClass().add("status-overdue");
+            case "CLOSED" -> statusBadge.getStyleClass().add("status-success");
+            default -> statusBadge.getStyleClass().add("status-pending");
+        }
+    }
+
+    // ================================
+    // UPDATE BUTTON VISIBILITY
+    // ================================
+    private void updateStatusButtons() {
+        btnApprove.setVisible(false);
+        btnClose.setVisible(false);
+
+        if (loan.getStatus() == Loan.LoanStatus.PENDING) {
+            btnApprove.setVisible(true);
+        } else if (loan.getStatus() == Loan.LoanStatus.ACTIVE && loan.getOutstandingAmount() <= 0) {
+            btnClose.setVisible(true);
+        }
+    }
+
+    // ================================
+    // AUTOMATIC STATUS UPDATES
+    // ================================
+    private void updateLoanStatusAutomatically() {
+        // OVERDUE
+        if (loan.getStatus() == Loan.LoanStatus.ACTIVE && loan.getEndDate().isBefore(LocalDate.now())
+                && loan.getOutstandingAmount() > 0) {
+            loan.setStatus(Loan.LoanStatus.OVERDUE);
+            loanService.updateLoan(loan);
+        }
+
+        // CLOSED
+        if (loan.getStatus() == Loan.LoanStatus.ACTIVE && loan.getOutstandingAmount() <= 0) {
+            loan.setStatus(Loan.LoanStatus.CLOSED);
+            loanService.updateLoan(loan);
+        }
+    }
+
+    // ================================
+    // BUTTON HANDLERS
+    // ================================
+    @FXML
+    private void handleApprove() {
+        try {
+            loanService.approveLoan(loan);
+            showMessage("Loan Approved!", Alert.AlertType.INFORMATION);
+            populateData();
+        } catch (Exception e) {
+            showMessage(e.getMessage(), Alert.AlertType.ERROR);
+        }
+    }
+
+    @FXML
+    private void handleClose() {
+        try {
+            loanService.closeLoan(loan);
+            showMessage("Loan Closed!", Alert.AlertType.INFORMATION);
+            populateData();
+        } catch (Exception e) {
+            showMessage(e.getMessage(), Alert.AlertType.ERROR);
+        }
+    }
+
+    // ================================
+    // GENERATE MOCK EMI SCHEDULE
+    // ================================
     private void generateSchedule(int totalMonths, int paidMonths, double emiAmount, LocalDate start) {
         ObservableList<EmiScheduleItem> items = FXCollections.observableArrayList();
-        if (start == null)
-            start = LocalDate.now();
+        if (start == null) start = LocalDate.now();
 
-        // Simple amortization simulation (Principal/Interest split is constant for
-        // simplicity unless we do complex math)
-        // For accurate display, we usually need a stored schedule. Here we mock split
-        // for UI demo (e.g. 70% Principal, 30% Interest)
-        // In real app, this should come from DB.
-
-        double interestPart = emiAmount * 0.2; // Mock 20% interest
+        double interestPart = emiAmount * 0.2;
         double principalPart = emiAmount - interestPart;
 
         for (int i = 1; i <= totalMonths; i++) {
             LocalDate date = start.plusMonths(i);
             String status = i <= paidMonths ? "Paid" : "Pending";
-
             items.add(new EmiScheduleItem(i, date.toString(), principalPart, interestPart, emiAmount, status));
         }
         scheduleTable.setItems(items);
     }
 
+    // ================================
+    // UTILS
+    // ================================
     private String capitalize(String str) {
-        if (str == null || str.isEmpty())
-            return str;
+        if (str == null || str.isEmpty()) return str;
         return str.substring(0, 1).toUpperCase() + str.substring(1).toLowerCase();
     }
 
@@ -235,7 +276,17 @@ public class LoanDetailsController {
         }
     }
 
-    // Helper Class for Table
+    private void showMessage(String message, Alert.AlertType type) {
+        Alert alert = new Alert(type);
+        alert.setTitle(type == Alert.AlertType.ERROR ? "Error" : "Success");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    // ================================
+    // HELPER CLASSES
+    // ================================
     public static class EmiScheduleItem {
         private final javafx.beans.property.IntegerProperty index;
         private final javafx.beans.property.StringProperty date;
@@ -253,41 +304,31 @@ public class LoanDetailsController {
             this.status = new javafx.beans.property.SimpleStringProperty(status);
         }
 
-        public javafx.beans.property.IntegerProperty indexProperty() {
-            return index;
-        }
-
-        public javafx.beans.property.StringProperty dateProperty() {
-            return date;
-        }
-
-        public javafx.beans.property.DoubleProperty principalProperty() {
-            return principal;
-        }
-
-        public javafx.beans.property.DoubleProperty interestProperty() {
-            return interest;
-        }
-
-        public javafx.beans.property.DoubleProperty totalProperty() {
-            return total;
-        }
-
-        public javafx.beans.property.StringProperty statusProperty() {
-            return status;
-        }
+        public javafx.beans.property.IntegerProperty indexProperty() { return index; }
+        public javafx.beans.property.StringProperty dateProperty() { return date; }
+        public javafx.beans.property.DoubleProperty principalProperty() { return principal; }
+        public javafx.beans.property.DoubleProperty interestProperty() { return interest; }
+        public javafx.beans.property.DoubleProperty totalProperty() { return total; }
+        public javafx.beans.property.StringProperty statusProperty() { return status; }
     }
 
-    // Helper Cell for Money
     private class MoneyCell extends TableCell<EmiScheduleItem, Double> {
         @Override
         protected void updateItem(Double item, boolean empty) {
             super.updateItem(item, empty);
-            if (empty || item == null) {
-                setText(null);
-            } else {
-                setText("Rs. " + formatMoney(item));
-            }
+            setText(empty || item == null ? null : "Rs. " + formatMoney(item));
+        }
+    }
+
+    // ================================
+    // AUTO CHECK OVERDUE WHEN CONTROLLER LOADS
+    // ================================
+    private void checkOverdueStatus() {
+        if (loan != null && loan.getStatus() == Loan.LoanStatus.ACTIVE
+                && loan.getEndDate().isBefore(LocalDate.now())
+                && loan.getOutstandingAmount() > 0) {
+            loan.setStatus(Loan.LoanStatus.OVERDUE);
+            loanService.updateLoan(loan);
         }
     }
 }
