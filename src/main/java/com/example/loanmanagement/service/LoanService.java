@@ -16,39 +16,50 @@ public class LoanService {
     private final CustomerDAO customerDAO;
 
     public LoanService() {
+        System.out.println("DEBUG: LoanService INSTANTIATED - VERSION WITH DAY/WEEK LOGIC");
         this.loanDAO = new LoanDAO();
         this.emiScheduleDAO = new EmiScheduleDAO();
         this.customerDAO = new CustomerDAO();
     }
 
     public void applyForLoan(Loan loan) {
-        // Calculate EMI
+        // Calculate "Installment" (mapped to EMI field)
         double principal = loan.getAmount();
-        double rate = loan.getInterestRate() / 12 / 100; // Monthly interest rate
-        int time = loan.getDurationMonths();
+        int duration = loan.getDurationMonths(); // Storing Days/Weeks count here
 
-        double emi = (principal * rate * Math.pow(1 + rate, time)) / (Math.pow(1 + rate, time) - 1);
-        loan.setEmi(Math.round(emi * 100.0) / 100.0);
+        if (loan.getType() == Loan.LoanType.DAY || loan.getType() == Loan.LoanType.WEEK) {
+            // UNIQUE CALCULATION (Not Standard EMI)
+            // The loan.getInterestRate() is the EFFECTIVE rate for the full term
+            // (calculated by Controller)
+            // Interest = Principal * (Rate / 100)
 
-        // Set other fields
+            double effectiveRate = loan.getInterestRate();
+            double totalInterest = principal * (effectiveRate / 100.0);
+
+            double documentCharges = loan.getDocumentCharges() != null ? loan.getDocumentCharges() : 0.0;
+            double totalPayable = principal + totalInterest + documentCharges;
+
+            double installment = totalPayable / duration;
+
+            loan.setEmi(Math.round(installment * 100.0) / 100.0);
+            loan.setPaidEmis(0);
+            loan.setTotalEmis(duration);
+            loan.setOutstandingAmount(Math.round(totalPayable * 100.0) / 100.0);
+            loan.setStatus(Loan.LoanStatus.PENDING);
+        } else {
+            // Standard Reducing Balance Logic (Legacy/Fallback)
+            // ... strict legacy logic ...
+            double rate = loan.getInterestRate() / 12 / 100; // Monthly interest rate
+            double emi = (principal * rate * Math.pow(1 + rate, duration)) / (Math.pow(1 + rate, duration) - 1);
+            loan.setEmi(Math.round(emi * 100.0) / 100.0);
+            loan.setPaidEmis(0);
+            loan.setTotalEmis(duration);
+            loan.setOutstandingAmount(loan.getEmi() * duration);
+            loan.setStatus(Loan.LoanStatus.PENDING);
+        }
+
         loan.setLoanId("LN-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
-        loan.setStartDate(LocalDate.now());
-        loan.setEndDate(LocalDate.now().plusMonths(time));
-        loan.setStatus(Loan.LoanStatus.PENDING); // Initial status
-        loan.setPaidEmis(0);
-        loan.setTotalEmis(time);
-        loan.setOutstandingAmount(loan.getAmount() + (loan.getEmi() * time) - loan.getAmount()); // Total Interest +
-                                                                                                 // Principal? No,
-                                                                                                 // usually outstanding
-                                                                                                 // is Principal +
-                                                                                                 // Interest remaining
-                                                                                                 // or just Principal.
-                                                                                                 // Let's say Total
-                                                                                                 // Payable Remaining.
-        // Actually usually outstanding is balance principal. But strict EMI loans track
-        // total payable.
-        // Let's settle on: Outstanding = Total Payable (EMI * months) - Paid Amount.
-        loan.setOutstandingAmount(loan.getEmi() * time);
+        // Start/End are set by Controller
 
         loanDAO.save(loan);
 
@@ -58,38 +69,49 @@ public class LoanService {
         customer.setActiveLoans(customer.getActiveLoans() + 1);
         customerDAO.update(customer);
 
-        // Generate EMI Schedule
+        // Generate Schedule
         generateEmiSchedule(loan);
     }
 
     private void generateEmiSchedule(Loan loan) {
-        double balance = loan.getAmount();
-        double monthlyRate = loan.getInterestRate() / 12 / 100;
-        double emi = loan.getEmi();
+        // Ensure strictly only DAY or WEEK logic runs.
+        if (loan.getType() == Loan.LoanType.DAY || loan.getType() == Loan.LoanType.WEEK) {
+            // Flat Rate Schedule Logic
+            double installment = loan.getEmi();
+            double principalComponent = loan.getAmount() / loan.getTotalEmis();
+            double interestComponent = installment - principalComponent;
 
-        for (int i = 1; i <= loan.getDurationMonths(); i++) {
-            double interest = balance * monthlyRate;
-            double principalComponent = emi - interest;
-            balance -= principalComponent;
+            for (int i = 1; i <= loan.getTotalEmis(); i++) {
+                EmiSchedule schedule = new EmiSchedule();
+                schedule.setLoan(loan);
+                schedule.setEmiNumber(i);
 
-            if (balance < 0)
-                balance = 0; // Floating point correction
+                if (loan.getType() == Loan.LoanType.DAY) {
+                    schedule.setDueDate(loan.getStartDate().plusDays(i));
+                    System.out.println("DEBUG: Gen Schedule DAY " + i + " " + schedule.getDueDate());
+                } else { // WEEK
+                    schedule.setDueDate(loan.getStartDate().plusWeeks(i));
+                    System.out.println("DEBUG: Gen Schedule WEEK " + i + " " + schedule.getDueDate());
+                }
 
-            EmiSchedule schedule = new EmiSchedule();
-            schedule.setLoan(loan);
-            schedule.setEmiNumber(i);
-            schedule.setDueDate(loan.getStartDate().plusMonths(i));
-            schedule.setAmount(emi);
-            schedule.setPrincipal(Math.round(principalComponent * 100.0) / 100.0);
-            schedule.setInterest(Math.round(interest * 100.0) / 100.0);
-            schedule.setStatus(EmiSchedule.EmiStatus.PENDING);
+                schedule.setAmount(installment);
+                schedule.setPrincipal(Math.round(principalComponent * 100.0) / 100.0);
+                schedule.setInterest(Math.round(interestComponent * 100.0) / 100.0);
+                schedule.setStatus(EmiSchedule.EmiStatus.PENDING);
 
-            emiScheduleDAO.save(schedule);
+                emiScheduleDAO.save(schedule);
+            }
+        } else {
+            System.err.println("ERROR: Unknown Loan Type for Schedule Generation: " + loan.getType());
         }
     }
 
     public List<Loan> getAllLoans() {
         return loanDAO.findAll();
+    }
+
+    public List<EmiSchedule> getEmiSchedule(Long loanId) {
+        return emiScheduleDAO.findByLoanId(loanId);
     }
 
     public List<Loan> getLoansByCustomer(Long customerId) {
@@ -116,68 +138,67 @@ public class LoanService {
     // Or we rely on `OpenSessionInView` pattern or Eager fetching.
     // Given the architecture, maybe we should add `getLoanWithSchedule` in DAO.
 
-    
     // ================================
-// UPDATE EXISTING LOAN
-// ================================
-public void updateLoan(Loan loan) {
-    loanDAO.update(loan);
-}
-
-// ================================
-// APPROVE LOAN (PENDING → ACTIVE)
-// ================================
-public void approveLoan(Loan loan) {
-
-    if (loan.getStatus() != Loan.LoanStatus.PENDING) {
-        throw new IllegalStateException("Only PENDING loans can be approved.");
+    // UPDATE EXISTING LOAN
+    // ================================
+    public void updateLoan(Loan loan) {
+        loanDAO.update(loan);
     }
 
-    loan.setStatus(Loan.LoanStatus.ACTIVE);
-    loanDAO.update(loan);
-}
+    // ================================
+    // APPROVE LOAN (PENDING → ACTIVE)
+    // ================================
+    public void approveLoan(Loan loan) {
 
-// ================================
-// CLOSE LOAN (ACTIVE → CLOSED)
-// ================================
-public void closeLoan(Loan loan) {
+        if (loan.getStatus() != Loan.LoanStatus.PENDING) {
+            throw new IllegalStateException("Only PENDING loans can be approved.");
+        }
 
-    if (loan.getStatus() != Loan.LoanStatus.ACTIVE) {
-        throw new IllegalStateException("Only ACTIVE loans can be closed.");
+        loan.setStatus(Loan.LoanStatus.ACTIVE);
+        loanDAO.update(loan);
     }
 
-    if (loan.getOutstandingAmount() > 0) {
-        throw new IllegalStateException("Loan cannot be closed. Outstanding amount exists.");
+    // ================================
+    // CLOSE LOAN (ACTIVE → CLOSED)
+    // ================================
+    public void closeLoan(Loan loan) {
+
+        if (loan.getStatus() != Loan.LoanStatus.ACTIVE) {
+            throw new IllegalStateException("Only ACTIVE loans can be closed.");
+        }
+
+        if (loan.getOutstandingAmount() > 0) {
+            throw new IllegalStateException("Loan cannot be closed. Outstanding amount exists.");
+        }
+
+        loan.setStatus(Loan.LoanStatus.CLOSED);
+        loanDAO.update(loan);
     }
 
-    loan.setStatus(Loan.LoanStatus.CLOSED);
-    loanDAO.update(loan);
-}
+    // ================================
+    // AUTO CHECK OVERDUE LOANS
+    // ================================
+    public void checkAndUpdateOverdueLoans() {
 
-// ================================
-// AUTO CHECK OVERDUE LOANS
-// ================================
-public void checkAndUpdateOverdueLoans() {
+        List<Loan> activeLoans = loanDAO.findByStatus(Loan.LoanStatus.ACTIVE);
 
-    List<Loan> activeLoans = loanDAO.findByStatus(Loan.LoanStatus.ACTIVE);
+        for (Loan loan : activeLoans) {
 
-    for (Loan loan : activeLoans) {
+            // If end date passed and still has outstanding amount
+            if (loan.getEndDate().isBefore(LocalDate.now())
+                    && loan.getOutstandingAmount() > 0) {
 
-        // If end date passed and still has outstanding amount
-        if (loan.getEndDate().isBefore(LocalDate.now())
-                && loan.getOutstandingAmount() > 0) {
-
-            loan.setStatus(Loan.LoanStatus.OVERDUE);
-            loanDAO.update(loan);
+                loan.setStatus(Loan.LoanStatus.OVERDUE);
+                loanDAO.update(loan);
+            }
         }
     }
-}
 
-// ================================
-// GET LOANS BY STATUS
-// ================================
-public List<Loan> getLoansByStatus(Loan.LoanStatus status) {
-    return loanDAO.findByStatus(status);
-}
+    // ================================
+    // GET LOANS BY STATUS
+    // ================================
+    public List<Loan> getLoansByStatus(Loan.LoanStatus status) {
+        return loanDAO.findByStatus(status);
+    }
 
 }

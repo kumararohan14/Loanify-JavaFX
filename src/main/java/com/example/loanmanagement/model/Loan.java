@@ -29,6 +29,9 @@ public class Loan {
     @Column(name = "interest_rate")
     private Double interestRate;
 
+    @Column(name = "document_charges")
+    private Double documentCharges;
+
     @Column(name = "duration_months")
     private Integer durationMonths;
 
@@ -53,7 +56,7 @@ public class Loan {
     private Double outstandingAmount;
 
     public enum LoanType {
-        PERSONAL(15.0), VEHICLE(12.0), HOME(9.0), BUSINESS(14.0), EDUCATION(8.0);
+        DAY(30.0), WEEK(30.0);
 
         private final double interestRate;
 

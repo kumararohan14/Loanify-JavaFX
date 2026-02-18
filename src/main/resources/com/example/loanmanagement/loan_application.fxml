@@ -60,8 +60,8 @@
 
                         <!-- Duration -->
                         <VBox spacing="5" GridPane.rowIndex="3">
-                            <Label text="Duration (Months)" style="-fx-font-weight: bold; -fx-text-fill: #4b5563;"/>
-                            <ComboBox fx:id="durationCombo" promptText="Select duration..." maxWidth="Infinity" style="-fx-pref-height: 40;"/>
+                            <Label text="Duration (Days/Weeks)" style="-fx-font-weight: bold; -fx-text-fill: #4b5563;"/>
+                            <Spinner fx:id="durationSpinner" editable="true" maxWidth="Infinity" style="-fx-pref-height: 40;"/>
                         </VBox>
                         
                         <!-- Interest Rate -->

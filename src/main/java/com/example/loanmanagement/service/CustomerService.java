@@ -12,44 +12,45 @@ public class CustomerService {
 
     public CustomerService() {
         this.customerDAO = new CustomerDAO();
-        // Use TwilioSmsService. If credentials are not set, it defaults to mock behavior.
+        // Use TwilioSmsService. If credentials are not set, it defaults to mock
+        // behavior.
         this.smsService = new TwilioSmsService();
     }
 
-    public void addCustomer(Customer customer) throws SmsSendingException{
+    public void addCustomer(Customer customer) throws SmsSendingException {
         if (customerDAO.findByNic(customer.getNic()) != null) {
             throw new IllegalArgumentException("Customer with this NIC already exists");
         }
-        
+
         // Generate 6-digit OTP
         String otp = String.format("%06d", new java.util.Random().nextInt(999999));
         customer.setOtp(otp);
         customer.setOtpExpiry(java.time.LocalDateTime.now().plusMinutes(5));
         customer.setStatus(Customer.Status.PENDING);
-        
+
         customerDAO.save(customer);
-        
+
         // Send OTP via SMS
         if (customer.getPhone() != null && !customer.getPhone().isEmpty()) {
             String formattedPhone = formatPhoneNumber(customer.getPhone());
             smsService.sendSms(formattedPhone, "Your OTP for Loanify is: " + otp);
         }
     }
-    
+
     public boolean verifyOtp(String nic, String otp) {
         Customer customer = customerDAO.findByNic(nic);
         if (customer == null) {
             throw new IllegalArgumentException("Customer not found");
         }
-        
+
         if (customer.getOtp() == null || !customer.getOtp().equals(otp)) {
             return false;
         }
-        
+
         if (customer.getOtpExpiry().isBefore(java.time.LocalDateTime.now())) {
             throw new IllegalArgumentException("OTP has expired");
         }
-        
+
         // OTP is valid
         customer.setStatus(Customer.Status.ACTIVE);
         customer.setOtp(null);
@@ -59,40 +60,40 @@ public class CustomerService {
     }
 
     public void resendOtp(String nic) throws SmsSendingException {
-    Customer customer = customerDAO.findByNic(nic);
-    if (customer == null) {
-        throw new IllegalArgumentException("Customer not found");
+        Customer customer = customerDAO.findByNic(nic);
+        if (customer == null) {
+            throw new IllegalArgumentException("Customer not found");
+        }
+
+        // Check if customer has a phone number
+        if (customer.getPhone() == null || customer.getPhone().isEmpty()) {
+            throw new IllegalArgumentException("Customer does not have a phone number to receive OTP.");
+        }
+
+        // Generate a new 6-digit OTP
+        String otp = String.format("%06d", new java.util.Random().nextInt(999999));
+        customer.setOtp(otp);
+        customer.setOtpExpiry(java.time.LocalDateTime.now().plusMinutes(5));
+
+        // Update customer in DB
+        customerDAO.update(customer);
+
+        // Send OTP via SMS
+        String formattedPhone = formatPhoneNumber(customer.getPhone());
+        try {
+            smsService.sendSms(formattedPhone, "Your new OTP for Loanify is: " + otp);
+        } catch (SmsSendingException e) {
+            // Log and rethrow for controller to handle retry
+            System.err.println("Failed to resend OTP to " + formattedPhone + ": " + e.getMessage());
+            throw e;
+        }
     }
-
-    // Check if customer has a phone number
-    if (customer.getPhone() == null || customer.getPhone().isEmpty()) {
-        throw new IllegalArgumentException("Customer does not have a phone number to receive OTP.");
-    }
-
-    // Generate a new 6-digit OTP
-    String otp = String.format("%06d", new java.util.Random().nextInt(999999));
-    customer.setOtp(otp);
-    customer.setOtpExpiry(java.time.LocalDateTime.now().plusMinutes(5));
-
-    // Update customer in DB
-    customerDAO.update(customer);
-
-    // Send OTP via SMS
-    String formattedPhone = formatPhoneNumber(customer.getPhone());
-    try {
-        smsService.sendSms(formattedPhone, "Your new OTP for Loanify is: " + otp);
-    } catch (SmsSendingException e) {
-        // Log and rethrow for controller to handle retry
-        System.err.println("Failed to resend OTP to " + formattedPhone + ": " + e.getMessage());
-        throw e;
-    }
-}
-
 
     private String formatPhoneNumber(String phone) {
-        if (phone == null) return null;
+        if (phone == null)
+            return null;
         phone = phone.trim().replaceAll("\\s+", ""); // Remove spaces
-        
+
         // Sri Lanka specific formatting
         if (phone.startsWith("0")) {
             return "+94" + phone.substring(1);
@@ -112,11 +113,11 @@ public class CustomerService {
         if (customer == null) {
             throw new IllegalArgumentException("Customer not found");
         }
-        
+
         if (customer.getActiveLoans() > 0) {
             throw new IllegalStateException("Cannot delete customer with active loans.");
         }
-        
+
         customerDAO.delete(customer);
     }
 

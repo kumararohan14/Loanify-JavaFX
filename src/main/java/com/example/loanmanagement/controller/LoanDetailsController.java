@@ -9,46 +9,76 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public class LoanDetailsController {
 
-    @FXML private Label subtitleLabel;
-    @FXML private Label loanIdLabel;
-    @FXML private Label statusBadge;
-    @FXML private Label loanTypeLabel;
-    @FXML private Label amountLabel;
-    @FXML private Label outstandingLabelHeader;
-    @FXML private Label customerNameLabel;
-    @FXML private Label startDateLabel;
-    @FXML private Label endDateLabel;
-    @FXML private Label rateLabel;
+    @FXML
+    private Label subtitleLabel;
+    @FXML
+    private Label loanIdLabel;
+    @FXML
+    private Label statusBadge;
+    @FXML
+    private Label loanTypeLabel;
+    @FXML
+    private Label amountLabel;
+    @FXML
+    private Label outstandingLabelHeader;
+    @FXML
+    private Label customerNameLabel;
+    @FXML
+    private Label startDateLabel;
+    @FXML
+    private Label endDateLabel;
+    @FXML
+    private Label rateLabel;
 
-    @FXML private Label progressTextLabel;
-    @FXML private ProgressBar emiProgressBar;
-    @FXML private Label progressPercentLabel;
-    @FXML private Label remainingEmisLabel;
+    @FXML
+    private Label progressTextLabel;
+    @FXML
+    private ProgressBar emiProgressBar;
+    @FXML
+    private Label progressPercentLabel;
+    @FXML
+    private Label remainingEmisLabel;
 
-    @FXML private Label paidEmisCountLabel;
-    @FXML private Label monthlyEmiLabel;
-    @FXML private Label totalDurationLabel;
+    @FXML
+    private Label paidEmisCountLabel;
+    @FXML
+    private Label monthlyEmiLabel;
+    @FXML
+    private Label totalDurationLabel;
 
-    @FXML private Label totalPaidLabel;
-    @FXML private Label totalOutstandingLabel;
-    @FXML private Label nextEmiDateLabel;
+    @FXML
+    private Label totalPaidLabel;
+    @FXML
+    private Label totalOutstandingLabel;
+    @FXML
+    private Label nextEmiDateLabel;
 
-    @FXML private TableView<EmiScheduleItem> scheduleTable;
-    @FXML private TableColumn<EmiScheduleItem, Integer> colIndex;
-    @FXML private TableColumn<EmiScheduleItem, String> colDate;
-    @FXML private TableColumn<EmiScheduleItem, Double> colPrincipal;
-    @FXML private TableColumn<EmiScheduleItem, Double> colInterest;
-    @FXML private TableColumn<EmiScheduleItem, Double> colTotal;
-    @FXML private TableColumn<EmiScheduleItem, String> colStatus;
+    @FXML
+    private TableView<EmiScheduleItem> scheduleTable;
+    @FXML
+    private TableColumn<EmiScheduleItem, Integer> colIndex;
+    @FXML
+    private TableColumn<EmiScheduleItem, String> colDate;
+    @FXML
+    private TableColumn<EmiScheduleItem, Double> colPrincipal;
+    @FXML
+    private TableColumn<EmiScheduleItem, Double> colInterest;
+    @FXML
+    private TableColumn<EmiScheduleItem, Double> colTotal;
+    @FXML
+    private TableColumn<EmiScheduleItem, String> colStatus;
 
     // New Buttons for status changes
-    @FXML private Button btnApprove;   // PENDING → ACTIVE
-    @FXML private Button btnClose;     // ACTIVE → CLOSED
-    @FXML private Button btnBackToLoans;
-
+    @FXML
+    private Button btnApprove; // PENDING → ACTIVE
+    @FXML
+    private Button btnClose; // ACTIVE → CLOSED
+    @FXML
+    private Button btnBackToLoans;
 
     private Loan loan;
     private final LoanService loanService = new LoanService();
@@ -59,8 +89,10 @@ public class LoanDetailsController {
         checkOverdueStatus();
 
         // Hide approve button by default
-        if (btnApprove != null) btnApprove.setVisible(false);
-        if (btnBackToLoans != null) btnBackToLoans.setVisible(true);
+        if (btnApprove != null)
+            btnApprove.setVisible(false);
+        if (btnBackToLoans != null)
+            btnBackToLoans.setVisible(true);
     }
 
     // ================================
@@ -84,7 +116,8 @@ public class LoanDetailsController {
             protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
                 setText(empty ? null : item);
-                if (!empty) setStyle("-fx-text-fill: #6b7280;");
+                if (!empty)
+                    setStyle("-fx-text-fill: #6b7280;");
             }
         });
 
@@ -122,7 +155,8 @@ public class LoanDetailsController {
     // POPULATE ALL UI DATA
     // ================================
     private void populateData() {
-        if (loan == null) return;
+        if (loan == null)
+            return;
 
         subtitleLabel.setText("Viewing " + loan.getLoanId());
         loanIdLabel.setText(loan.getLoanId());
@@ -156,10 +190,21 @@ public class LoanDetailsController {
 
         totalPaidLabel.setText("Rs. " + formatMoney(paid * emi));
 
-        LocalDate nextDue = loan.getStartDate() != null ? loan.getStartDate().plusMonths(paid + 1) : LocalDate.now();
+        LocalDate nextDue;
+        if (loan.getStartDate() != null) {
+            if (loan.getType() == Loan.LoanType.DAY) {
+                nextDue = loan.getStartDate().plusDays(paid + 1);
+            } else if (loan.getType() == Loan.LoanType.WEEK) {
+                nextDue = loan.getStartDate().plusWeeks(paid + 1);
+            } else {
+                nextDue = loan.getStartDate().plusMonths(paid + 1);
+            }
+        } else {
+            nextDue = LocalDate.now();
+        }
         nextEmiDateLabel.setText(nextDue.toString());
 
-        generateSchedule(total, paid, emi, loan.getStartDate());
+        loadRealSchedule();
 
         // Update buttons based on status
         updateStatusButtons();
@@ -242,17 +287,24 @@ public class LoanDetailsController {
     // ================================
     // GENERATE MOCK EMI SCHEDULE
     // ================================
-    private void generateSchedule(int totalMonths, int paidMonths, double emiAmount, LocalDate start) {
+    // ================================
+    // LOAD REAL EMI SCHEDULE FROM DB
+    // ================================
+    private void loadRealSchedule() {
+        if (loan == null)
+            return;
+
+        List<com.example.loanmanagement.model.EmiSchedule> scheduleList = loanService.getEmiSchedule(loan.getId());
         ObservableList<EmiScheduleItem> items = FXCollections.observableArrayList();
-        if (start == null) start = LocalDate.now();
 
-        double interestPart = emiAmount * 0.2;
-        double principalPart = emiAmount - interestPart;
-
-        for (int i = 1; i <= totalMonths; i++) {
-            LocalDate date = start.plusMonths(i);
-            String status = i <= paidMonths ? "Paid" : "Pending";
-            items.add(new EmiScheduleItem(i, date.toString(), principalPart, interestPart, emiAmount, status));
+        for (com.example.loanmanagement.model.EmiSchedule s : scheduleList) {
+            items.add(new EmiScheduleItem(
+                    s.getEmiNumber(),
+                    s.getDueDate().toString(),
+                    s.getPrincipal(),
+                    s.getInterest(),
+                    s.getAmount(),
+                    capitalize(s.getStatus().name())));
         }
         scheduleTable.setItems(items);
     }
@@ -261,7 +313,8 @@ public class LoanDetailsController {
     // UTILS
     // ================================
     private String capitalize(String str) {
-        if (str == null || str.isEmpty()) return str;
+        if (str == null || str.isEmpty())
+            return str;
         return str.substring(0, 1).toUpperCase() + str.substring(1).toLowerCase();
     }
 
@@ -304,12 +357,29 @@ public class LoanDetailsController {
             this.status = new javafx.beans.property.SimpleStringProperty(status);
         }
 
-        public javafx.beans.property.IntegerProperty indexProperty() { return index; }
-        public javafx.beans.property.StringProperty dateProperty() { return date; }
-        public javafx.beans.property.DoubleProperty principalProperty() { return principal; }
-        public javafx.beans.property.DoubleProperty interestProperty() { return interest; }
-        public javafx.beans.property.DoubleProperty totalProperty() { return total; }
-        public javafx.beans.property.StringProperty statusProperty() { return status; }
+        public javafx.beans.property.IntegerProperty indexProperty() {
+            return index;
+        }
+
+        public javafx.beans.property.StringProperty dateProperty() {
+            return date;
+        }
+
+        public javafx.beans.property.DoubleProperty principalProperty() {
+            return principal;
+        }
+
+        public javafx.beans.property.DoubleProperty interestProperty() {
+            return interest;
+        }
+
+        public javafx.beans.property.DoubleProperty totalProperty() {
+            return total;
+        }
+
+        public javafx.beans.property.StringProperty statusProperty() {
+            return status;
+        }
     }
 
     private class MoneyCell extends TableCell<EmiScheduleItem, Double> {
