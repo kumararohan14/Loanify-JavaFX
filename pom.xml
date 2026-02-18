@@ -42,13 +42,7 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- Twilio (sms sender dependency) -->
-        <dependency>
-            <groupId>com.twilio.sdk</groupId>
-            <artifactId>twilio</artifactId>
-            <version>11.3.2</version>
-            <scope>compile</scope>
-        </dependency>
+
 
              <!-- iText PDF -->
         <dependency>

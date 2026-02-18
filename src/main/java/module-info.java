@@ -7,7 +7,6 @@ module com.example.loanmanagement {
     requires org.hibernate.orm.core;
     requires jakarta.persistence;
     requires static lombok;
-    requires twilio;
     requires itextpdf;
     requires java.desktop;
     requires org.apache.poi.ooxml;

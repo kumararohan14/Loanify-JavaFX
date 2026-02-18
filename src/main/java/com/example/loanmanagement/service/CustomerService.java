@@ -12,9 +12,8 @@ public class CustomerService {
 
     public CustomerService() {
         this.customerDAO = new CustomerDAO();
-        // Use TwilioSmsService. If credentials are not set, it defaults to mock
-        // behavior.
-        this.smsService = new TwilioSmsService();
+        // Use TextLkSmsService for SMS OTP
+        this.smsService = new TextLkSmsService();
     }
 
     public void addCustomer(Customer customer) throws SmsSendingException {
