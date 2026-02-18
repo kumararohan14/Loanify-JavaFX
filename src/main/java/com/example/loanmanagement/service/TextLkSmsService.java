@@ -46,7 +46,7 @@ public class TextLkSmsService implements SmsService {
             String recipient = phoneNumber.replace("+", "").trim();
 
             URL url = new URL(apiUrl);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            HttpURLConnection conn = createConnection(url);
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "application/json");
             conn.setRequestProperty("Accept", "application/json");
@@ -75,5 +75,9 @@ public class TextLkSmsService implements SmsService {
             e.printStackTrace();
             throw new SmsSendingException("Error sending SMS: " + e.getMessage(), e);
         }
+    }
+
+    protected HttpURLConnection createConnection(URL url) throws java.io.IOException {
+        return (HttpURLConnection) url.openConnection();
     }
 }

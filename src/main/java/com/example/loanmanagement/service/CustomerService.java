@@ -16,6 +16,11 @@ public class CustomerService {
         this.smsService = new TextLkSmsService();
     }
 
+    public CustomerService(CustomerDAO customerDAO, SmsService smsService) {
+        this.customerDAO = customerDAO;
+        this.smsService = smsService;
+    }
+
     public void addCustomer(Customer customer) throws SmsSendingException {
         if (customerDAO.findByNic(customer.getNic()) != null) {
             throw new IllegalArgumentException("Customer with this NIC already exists");
